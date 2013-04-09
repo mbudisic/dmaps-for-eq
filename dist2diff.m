@@ -1,4 +1,4 @@
-function [evectors, evalues] = dist2diff(D, Nvec, h)
+function [evectors, evalues, h] = dist2diff(D, Nvec, h)
 % DIST2DIFF(D, Nvec, h)
 %
 % Compute diffusion eigenfunctions from a distance matrix.
@@ -19,7 +19,7 @@ N = size(D,1);
 if ~exist('h', 'var') || h < 0
     Nsize = min( fix(N*5e-3), N-1); % neighborhood size - this is heuristic, sets to .5% of dataset
     h = nss(D, Nsize); % estimate using neighborhood size stability
-    fprintf(1,'Estimated bandwidth: %.2e\n',h);
+    fprintf(1,'Estimated bandwidth h = %.2e\n',h);
 end
 
 
@@ -57,4 +57,8 @@ evectors = V(:, eind);
 
 %% rescale with dominant eigenvector to account for symmetrization
 evectors = evectors ./ repmat(evectors(:,1), [1, size(evectors,2)]);
+
+% skip trivial eigenvalue and eigenvector
+evectors = evectors(:,2:end);
+evalues = evalues(2:end);
 
