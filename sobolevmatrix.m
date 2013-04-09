@@ -1,11 +1,11 @@
 function D = sobolevmatrix( V, wv, s )
-% SOBOLEVMATRIX
+% SOBOLEVMATRIX( V, wv, s )
 %
 % Compute squared-Sobolev-distance NxN matrix between 'vectors' of observables of length K.
 %
-% vectors - K x N complex matrix - each column is a vector of observables
+% V - K x N complex matrix - each column is a vector of observables
 %           at a different point
-% wavenumbers - d x K - wavevectors - each column is a wavevector
+% wv - d x K - wavevectors - each column is a wavevector
 % s - order of Sobolev distance 
 
 K = size(wv, 2);
