@@ -4,9 +4,9 @@ function exampleDynamics
 % Demonstration of use of Diffusion Maps for analysis of dynamical systems.
 
 %% preamble
-Ngrid = 30; % dimension of grid of initial conditions per axis
-Tmax = 10;  % time length
-Wmax = 5;   % max wavevector used
+Ngrid = 10; % dimension of grid of initial conditions per axis
+Tmax = 5;  % time length
+Wmax = 3;   % max wavevector used
 
 %% Compute or load trajectories from a file
 demofile = 'exampleDynamicsTrajectories.mat';
@@ -34,8 +34,8 @@ K = size(wv,2);
 
 %% compute averages of Fourier functions along trajectories
 avgs = zeros( K, Npoints, 'like', 1+1j );
-xscale = 1;
-yscale = 1;
+xscale = 2;
+yscale = 2;
 
 % select Matlab Coder MEX if it exists
 if exist('computeAverages_mex') == 3
@@ -48,7 +48,7 @@ end
 
 disp('Computing averages')
 parfor n = 1:Npoints
-    [myavg_real, myavg_imag] = average( t, xy(:,:,n), wv, xscale, yscale );
+    [myavg_real, myavg_imag] = average( t, xy(:,:,n), wv, [xscale, yscale] );
     avgs(:,n) = complex(myavg_real, myavg_imag);
 end
 
@@ -58,7 +58,16 @@ end
 %% compute sobolev distances between trajectories
 disp('Computing distance matrix');
 spaceDim = 2;
-D = sobolevmatrix( avgs, wv, -(spaceDim + 1)/2 );
+
+if exist('sobolevMatrix_mex') == 3
+    disp('Using MEX distance function')
+    distance = @sobolevMatrix_mex;
+else
+    disp('Using Matlab distance function. Run "deploytool -build sobolevMatrix.prj" to speed up computation.')
+    distance = @sobolevMatrix;
+end
+
+D = distance( avgs, wv, -(spaceDim + 1)/2 );
 % D is a Npoints x Npoints real matrix with positive entries
 
 %% compute diffusion coordinates for trajectories
