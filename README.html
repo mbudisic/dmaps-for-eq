@@ -7,7 +7,7 @@
 <meta http-equiv="Content-Type" content="text/html;charset=iso-8859-1"/>
 <meta name="title" content="Diffusion Maps for Dynamics"/>
 <meta name="generator" content="Org-mode"/>
-<meta name="generated" content="2013-10-04T17:01-0500"/>
+<meta name="generated" content="2013-10-05T10:11-0500"/>
 <meta name="author" content="Marko Budisic"/>
 <meta name="description" content=""/>
 <meta name="keywords" content=""/>
@@ -107,7 +107,97 @@ for the JavaScript code in this tag.
  }
 /*]]>*///-->
 </script>
+<script type="text/javascript" src="http://orgmode.org/mathjax/MathJax.js">
+/**
+ *
+ * @source: http://orgmode.org/mathjax/MathJax.js
+ *
+ * @licstart  The following is the entire license notice for the
+ *  JavaScript code in http://orgmode.org/mathjax/MathJax.js.
+ *
+ * Copyright (C) 2012-2013  MathJax
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * @licend  The above is the entire license notice
+ * for the JavaScript code in http://orgmode.org/mathjax/MathJax.js.
+ *
+ */
 
+/*
+@licstart  The following is the entire license notice for the
+JavaScript code below.
+
+Copyright (C) 2012-2013 Free Software Foundation, Inc.
+
+The JavaScript code below is free software: you can
+redistribute it and/or modify it under the terms of the GNU
+General Public License (GNU GPL) as published by the Free Software
+Foundation, either version 3 of the License, or (at your option)
+any later version.  The code is distributed WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU GPL for more details.
+
+As additional permission under GNU GPL version 3 section 7, you
+may distribute non-source (e.g., minimized or compacted) forms of
+that code without the copy of the GNU GPL normally required by
+section 4, provided you include this license notice and a URL
+through which recipients can access the Corresponding Source.
+
+
+@licend  The above is the entire license notice
+for the JavaScript code below.
+*/
+<!--/*--><![CDATA[/*><!--*/
+    MathJax.Hub.Config({
+        // Only one of the two following lines, depending on user settings
+        // First allows browser-native MathML display, second forces HTML/CSS
+        //  config: ["MMLorHTML.js"], jax: ["input/TeX"],
+            jax: ["input/TeX", "output/HTML-CSS"],
+        extensions: ["tex2jax.js","TeX/AMSmath.js","TeX/AMSsymbols.js",
+                     "TeX/noUndefined.js"],
+        tex2jax: {
+            inlineMath: [ ["\\(","\\)"] ],
+            displayMath: [ ['$$','$$'], ["\\[","\\]"], ["\\begin{displaymath}","\\end{displaymath}"] ],
+            skipTags: ["script","noscript","style","textarea","pre","code"],
+            ignoreClass: "tex2jax_ignore",
+            processEscapes: false,
+            processEnvironments: true,
+            preview: "TeX"
+        },
+        showProcessingMessages: true,
+        displayAlign: "center",
+        displayIndent: "2em",
+
+        "HTML-CSS": {
+             scale: 100,
+             availableFonts: ["STIX","TeX"],
+             preferredFont: "TeX",
+             webFont: "TeX",
+             imageFont: "TeX",
+             showMathMenu: true,
+        },
+        MMLorHTML: {
+             prefer: {
+                 MSIE:    "MML",
+                 Firefox: "MML",
+                 Opera:   "HTML",
+                 other:   "HTML"
+             }
+        }
+    });
+/*]]>*///-->
+</script>
 </head>
 <body>
 
@@ -118,16 +208,16 @@ for the JavaScript code in this tag.
 <div id="content">
 <h1 class="title">Diffusion Maps for Dynamics</h1>
 
-<p>by Marko Budisic (mbudisic@math.wisc.edu)
+<p>by Marko Budisic (<a href="mailto:marko@math.wisc.edu">mailto:marko@math.wisc.edu</a>)
 </p>
 <p>
 This is my implementation of Coifman/Lafon algorithm for efficient embeddings of high-dimensional data sets. The use can best be seen in two examples: 
 </p>
 <dl>
-<dt>exampleTorus.m</dt><dd>demonstrate that the algorithm successfully embeds a 2-torus
+<dt><a href="#sec-1-2">exampleTorus</a>.m</dt><dd>demonstrate that the algorithm successfully embeds a 2-torus
 
 </dd>
-<dt>exampleDynamics.m</dt><dd>demonstrate how algorithm is used on trajectories of a dynamical system
+<dt><a href="#sec-1-1">exampleDynamics</a>.m</dt><dd>demonstrate how algorithm is used on trajectories of a dynamical system
 </dd>
 </dl>
 
@@ -146,34 +236,173 @@ References:
 </ul>
 
 
-
-
-
-
 <p>
-Files:
-</p><dl>
-<dt>samplerun.m</dt><dd>demonstration of the code on an artificial data set generated as a grid of points on a 2-torus
-</dd>
-<dt>dist2diff.m</dt><dd>main diffusion maps code - computes eigenvectors of diffusion based on a pairwise distance matrix between points
-</dd>
-<dt>sobolevmatrix.m</dt><dd>compute Sobolev distance (used as input to dist2diff) based on vectors of Fourier-Stieltjes coefficients
-</dd>
-<dt>sobolevmatrix.prj</dt><dd>Matlab Coder project that generates efficient C code from sobolevmatrix.m; open and build in Matlab before running anything else to speed up computation
-</dd>
-<dt>nss.m</dt><dd>estimate bandwidth of the diffusion kernel using Neighborhood Size Stability algorithm ( )
-</dd>
-<dt>.hgignore</dt><dd>Mercurial repository file (has no influence on Matlab code)
-</dd>
-</dl>
+A brief overview of functionalities in their calling order is provided below. Each .m function contains commented code, so refer to source for details.
+</p>
 
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#sec-1">1 Computation functions</a>
+<ul>
+<li><a href="#sec-1-1">1.1 exampleDynamics.m</a>
+<ul>
+<li><a href="#sec-1-1-1">1.1.1 computeAverages.m</a></li>
+<li><a href="#sec-1-1-2">1.1.2 sobolevMatrix.m</a></li>
+<li><a href="#sec-1-1-3">1.1.3 dist2diff.m</a></li>
+</ul>
+</li>
+<li><a href="#sec-1-2">1.2 exampleTorus.m</a></li>
+</ul>
+</li>
+<li><a href="#sec-2">2 Visualization functions</a>
+<ul>
+<li><a href="#sec-2-1">2.1 viewHarmonic.m</a></li>
+<li><a href="#sec-2-2">2.2 pseudocolor.m</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-1" class="outline-2">
+<h2 id="sec-1"><span class="section-number-2">1</span> Computation functions</h2>
+<div class="outline-text-2" id="text-1">
 
 
 
 </div>
 
+<div id="outline-container-1-1" class="outline-3">
+<h3 id="sec-1-1"><a name="exampleDynamics" id="exampleDynamics"></a><span class="section-number-3">1.1</span> exampleDynamics.m</h3>
+<div class="outline-text-3" id="text-1-1">
+
+<p>A file demonstrating workflow for analyzing dynamical systems. The dynamics
+used is a simple planar double-well potential. It should be easy enough to generalize to a 3d system.
+</p>
+
+</div>
+
+<div id="outline-container-1-1-1" class="outline-4">
+<h4 id="sec-1-1-1"><span class="section-number-4">1.1.1</span> computeAverages.m</h4>
+<div class="outline-text-4" id="text-1-1-1">
+
+
+<p>
+Computes averages of a Fourier basis along a single state-space trajectory. 
+As a result of this function, each trajectory is "described" using a vector of time averages.
+</p>
+<p>
+(The code is written so that Matlab Coder can automatically generate MEX file from it, speeding up execution. To generate mex files, run
+'deploytool -build computeAverages.prj'
+in Matlab. The rest of the code will automatically use MEX if available.)
+</p>
+
+
+</div>
+
+</div>
+
+<div id="outline-container-1-1-2" class="outline-4">
+<h4 id="sec-1-1-2"><a name="sobolevMatrix" id="sobolevMatrix"></a><span class="section-number-4">1.1.2</span> sobolevMatrix.m</h4>
+<div class="outline-text-4" id="text-1-1-2">
+
+
+<p>
+Computes pairwise-distances between vectors of time averages using a Sobolev norm. If the state-space is D-dimensional, the recommended Sobolev index is s = -(D+1)/2.
+The space of trajectories (ergodic quotient for infinite averages) can be thought of as a graph, where vertices correspond to trajectories, and edges are Sobolev distances stored in the resulting matrix.
+</p>
+<p>
+(The code is written so that Matlab Coder can automatically generate MEX file from it, speeding up execution. To generate mex files, run
+'deploytool -build sobolevMatrix.prj'
+in Matlab. The rest of the code will automatically use MEX if available.)
+</p>
+</div>
+
+</div>
+
+<div id="outline-container-1-1-3" class="outline-4">
+<h4 id="sec-1-1-3"><a name="dist2diff" id="dist2diff"></a><span class="section-number-4">1.1.3</span> dist2diff.m</h4>
+<div class="outline-text-4" id="text-1-1-3">
+
+
+<p>
+Computes diffusion coordinates on a graph based on the pairwise-distance matrix between vertices, like the one generated by <a href="#sec-1-1-2">sobolevMatrix</a>. Typically, only a few diffusion coordinates are needed, but it's possible to compute as many diffusion coordinates as there are trajectories (dimension of the distance matrix).
+</p>
+<p>
+The diffusion coordinates algorithm depends on the bandwidth parameter  \(h\), which models the speed at which diffusion proceeds. For data analysis, this parameter can be determined heuristically using, e.g., <a href="#sec-1-1-3-1">nss</a> function, or it can be tuned manually. A value that is out of acceptable range will result in "important" diffusion eigenvectors, i.e., those carrying new information, to be relegated to higher indices. If \(h\) is too small, the ergodic quotient graph will be artificially disconnected, and as a consequence, first diffusion coordinates will look like indicator functions supported on the disconnected components. If \(h\) is too large, the first coordinate will be monotonic over data, but the next ones will look like higher harmonics over the same one-dimensional set. In both cases, higher-index diffusion coordinates would find the "important" geometry of the data set, but it's not easy to say a priori at which coordinate this would happen.
+</p>
+<p>
+In any case, the algorithm is tolerant to order-of-magnitude changes in \(h\), so the choice is not that crucial. The heuristic algorithm <a href="#sec-1-1-3-1">nss</a> gives a good starting point for any tuning that might be needed.
+</p>
+<ul>
+<li id="sec-1-1-3-1"><a name="nss" id="nss"></a>nss.m<br/>
+
+<p>
+Heuristically calculates a suitable diffusion bandwidth based on input data. The bandwidth is set to the minimal number \(h\) such that \(h\)-distance of any vertex contains a selected number of other vertices. This ensures one-step diffusion-connectedness of the graph, in coarse terms.
+</p>
+</li>
+</ul>
+</div>
+</div>
+
+</div>
+
+<div id="outline-container-1-2" class="outline-3">
+<h3 id="sec-1-2"><a name="exampleTorus" id="exampleTorus"></a><span class="section-number-3">1.2</span> exampleTorus.m</h3>
+<div class="outline-text-3" id="text-1-2">
+
+
+<p>
+A sanity-check example. The vertices are described by values of Fourier-harmonics sampled on  a torus. The diffusion coordinates should correspond to heat-modes on 2-torus, which are again Fourier harmonics. Therefore, embedding in the first few diffusion modes should resemble a 3d image of a doughnut.
+</p>
+<p>
+The example calls the same functions as seen before:
+</p><ul>
+<li><a href="#sec-1-1-2">sobolevMatrix.m</a>
+</li>
+<li><a href="#sec-1-1-3">dist2diff.m</a>
+</li>
+</ul>
+
+
+</div>
+</div>
+
+</div>
+
+<div id="outline-container-2" class="outline-2">
+<h2 id="sec-2"><span class="section-number-2">2</span> Visualization functions</h2>
+<div class="outline-text-2" id="text-2">
+
+
+
+</div>
+
+<div id="outline-container-2-1" class="outline-3">
+<h3 id="sec-2-1"><span class="section-number-3">2.1</span> viewHarmonic.m</h3>
+<div class="outline-text-3" id="text-2-1">
+
+
+</div>
+
+</div>
+
+<div id="outline-container-2-2" class="outline-3">
+<h3 id="sec-2-2"><span class="section-number-3">2.2</span> pseudocolor.m</h3>
+<div class="outline-text-3" id="text-2-2">
+
+
+
+
+</div>
+</div>
+</div>
+</div>
+
 <div id="postamble">
-<p class="date">Date: 2013-10-04T17:01-0500</p>
+<p class="date">Date: 2013-10-05T10:11-0500</p>
 <p class="author">Author: Marko Budisic</p>
 <p class="creator"><a href="http://orgmode.org">Org</a> version 7.9.3f with <a href="http://www.gnu.org/software/emacs/">Emacs</a> version 24</p>
 <a href="http://validator.w3.org/check?uri=referer">Validate XHTML 1.0</a>
