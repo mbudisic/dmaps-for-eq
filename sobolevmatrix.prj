@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <deployment-project plugin="plugin.matlabcoder" plugin-version="R2013a">
-  <configuration target="target.matlab.coder" target-name="MEX, C, and C++ Code Generation" name="sobolevmatrix" location="/Users/mbudisic/Work/MatlabToolbox/DiffusionMaps" file="/Users/mbudisic/Work/MatlabToolbox/DiffusionMaps/sobolevmatrix.prj" build-checksum="2027932764">
+  <configuration target="target.matlab.coder" target-name="MEX, C, and C++ Code Generation" name="sobolevMatrix" location="." file="./sobolevMatrix.prj" build-checksum="2027932764">
     <profile key="profile.mex">
       <param.MergeInstrumentationResults>false</param.MergeInstrumentationResults>
       <param.BuiltInstrumentedMex>false</param.BuiltInstrumentedMex>
@@ -294,10 +294,10 @@
         <param.UseECoderFeatures />
       </unset>
     </profile>
-    <param.outputfile>${PROJECT_ROOT}/sobolevmatrix_mex.mexmaci64</param.outputfile>
+    <param.outputfile>${PROJECT_ROOT}/sobolevMatrix_mex.mexmaci64</param.outputfile>
     <param.version>R2012a</param.version>
     <param.HasECoderFeatures>true</param.HasECoderFeatures>
-    <param.mex.mainhtml>/Users/mbudisic/Work/MatlabToolbox/DiffusionMaps/codegen/mex/sobolevmatrix/html/index.html</param.mex.mainhtml>
+    <param.mex.mainhtml>./codegen/mex/sobolevMatrix/html/index.html</param.mex.mainhtml>
     <param.grt.mainhtml />
     <param.CallGeneratedCodeFromTest>true</param.CallGeneratedCodeFromTest>
     <param.DefaultTestFile />
@@ -306,8 +306,8 @@
     <param.AutoInferUseUnboundedSize>false</param.AutoInferUseUnboundedSize>
     <param.AutoInferVariableSizeThreshold>1024</param.AutoInferVariableSizeThreshold>
     <param.AutoInferUnboundedSizeThreshold>2048</param.AutoInferUnboundedSizeThreshold>
-    <param.mex.outputfile>sobolevmatrix_mex</param.mex.outputfile>
-    <param.grt.outputfile>sobolevmatrix</param.grt.outputfile>
+    <param.mex.outputfile>sobolevMatrix_mex</param.mex.outputfile>
+    <param.grt.outputfile>sobolevMatrix</param.grt.outputfile>
     <param.artifact>option.target.artifact.mex</param.artifact>
     <param.FixedPointTypeProposalMode>option.FixedPointTypeProposalMode.ProposeFractionLengths</param.FixedPointTypeProposalMode>
     <param.DefaultProposedFixedPointType>numerictype([],16,12)</param.DefaultProposedFixedPointType>
@@ -395,8 +395,8 @@
       <param.DefaultFixedPointSignedness />
     </unset>
     <fileset.entrypoints>
-      <file value="${PROJECT_ROOT}/sobolevmatrix.m" custom-data-expanded="false">
-        <Inputs fileName="sobolevmatrix.m" functionName="sobolevmatrix">
+      <file value="${PROJECT_ROOT}/sobolevMatrix.m" custom-data-expanded="false">
+        <Inputs fileName="sobolevMatrix.m" functionName="sobolevMatrix">
           <Input Name="V">
             <Class>double</Class>
             <Size>:inf x :inf</Size>
@@ -424,7 +424,7 @@
     <fileset.testbench />
     <fileset.package />
     <build-deliverables>
-      <file name="sobolevmatrix_mex.mexmaci64" location="/Users/mbudisic/Work/MatlabToolbox/DiffusionMaps" optional="false">/Users/mbudisic/Work/MatlabToolbox/DiffusionMaps/sobolevmatrix_mex.mexmaci64</file>
+      <file name="sobolevMatrix_mex.mexmaci64" location="." optional="false">./sobolevMatrix_mex.mexmaci64</file>
     </build-deliverables>
     <workflow />
     <matlab>

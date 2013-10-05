@@ -1,4 +1,4 @@
-function D = sobolevmatrix( V, wv, s )
+function D = sobolevMatrix( V, wv, s )
 % SOBOLEVMATRIX( V, wv, s )
 %
 % Compute squared-Sobolev-distance NxN matrix between 'vectors' of observables of length K.
