@@ -80,7 +80,6 @@ h = -1;
 % corresponding trajectory
 
 %% THE END OF COMPUTATION
-
 disp('Visualizing')
 %% visualization of results (just for purposes of demonstration)
 [X,Y] = meshgrid( icgridX, icgridY );

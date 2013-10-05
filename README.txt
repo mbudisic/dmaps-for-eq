@@ -67,10 +67,8 @@ The example calls the same functions as seen before:
 * Visualization functions
 
 ** viewHarmonic.m
-
 Visualize a Fourier harmonic on a rectangular domain, based on its wavenumber and domain width/height.
 
-** pseudocolor.m
 
 #+STYLE:<style>html { font-family: Helvetica, sans-serif; text-align:justify; margin:2% 15% 2% 15%; max-width:800px; color:rgba(50, 50, 50, 1) }</style>
 
