@@ -1,4 +1,4 @@
-function [evectors, evalues] = samplerun
+function [evectors, evalues] = exampleTorus
 
 %% generate points on a 2-torus
 disp('Generating points on a torus... ')
