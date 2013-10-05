@@ -10,7 +10,7 @@ Wmax = 3;   % max wavevector used (results in (2 Wmax + 1)^2 observables used
 h = -1;     % diffusion bandwidth - <= 0 to autodetect (see nss.m)
 
 %% Compute or load trajectories from a file
-demofile = 'exampleDynamicsTrajectories.mat';
+demofile = './exampleDynamicsTrajectories.mat';
 if exist(demofile,'file')
     disp(['Loading trajectories. Erase ' demofile ' to recompute.']);
     load(demofile);
