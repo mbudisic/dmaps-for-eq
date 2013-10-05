@@ -31,8 +31,6 @@ As a result of this function, each trajectory is "described" using a vector of t
 'deploytool -build computeAverages.prj'
 in Matlab. The rest of the code will automatically use MEX if available.)
 
-
-
 *** sobolevMatrix.m 
 # <<sobolevMatrix>>
 
@@ -69,6 +67,8 @@ The example calls the same functions as seen before:
 * Visualization functions
 
 ** viewHarmonic.m
+
+Visualize a Fourier harmonic on a rectangular domain, based on its wavenumber and domain width/height.
 
 ** pseudocolor.m
 
