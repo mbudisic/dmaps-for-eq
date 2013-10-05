@@ -16,12 +16,13 @@ function [evectors, evalues, h] = dist2diff(D, Nvec, h)
 N = size(D,1);
 
 %% estimate diffusion bandwidth
-if ~exist('h', 'var') || h < 0
+if ~exist('h', 'var') || h <= 0
     Nsize = min( fix(N*5e-3), N-1); % neighborhood size - this is heuristic, sets to .5% of dataset
     h = nss(D, Nsize); % estimate using neighborhood size stability
     fprintf(1,'Estimated bandwidth h = %.2e\n',h);
 end
 
+assert( h > 0, 'Bandwidth has to be positive')
 
 %% unbiased heat kernel
 A = exp( -D/(4*h)); % heat kernel evaluation
@@ -40,7 +41,7 @@ assert( size(scaling,1) == size(Ahat,1) );
 assert( size(scaling,2) == size(Ahat,2) );
 
 S = Ahat ./ scaling;
-assert( norm(S - S.') < 1e-16, 'Symmetrized matrix not symmetric!')
+assert( norm(S - S.') < 1e-16, 'Symmetrized matrix not symmetric! Normof antisymmetric component: %e', norm(S - S.'))
 
 %% compute eigenvectors of the heat Markov chain
 opts.issym = true;

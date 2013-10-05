@@ -6,8 +6,11 @@ function h = nss(D, Nsize)
 % D - square of distances
 % Nsize - size of the neighborhood
 
+
 N = size(D,1);
 ds = zeros(1,N);
+
+Nsize = max(Nsize,1); % Nsize cannot be less than 1
 
 % find Nsize-smallest distance
 for k = 1:N

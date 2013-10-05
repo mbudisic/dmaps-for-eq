@@ -8,15 +8,15 @@ function D = sobolevMatrix( V, wv, s )
 % wv - d x K - wavevectors - each column is a wavevector
 % s - order of Sobolev distance 
 
+D = size(wv, 1);
 K = size(wv, 2);
-N = size(V, 2);
 
 assert( size(V, 1) == K, 'Number of rows in V should match length of wv' );
-
+N = size(V, 2);
 
 D = zeros(N);
 
-% compute wavenumbers
+% compute wavenumbers - L1 norm of eigenvectors
 wavenumbers = sum(abs(wv),1).';
 
 % compute sobolev weights
@@ -30,5 +30,7 @@ for i = 1:N
         D(j,i) = dv;
     end
 end
+
+assert( ~any( isnan(D(:))), 'There is a NaN in the matrix');
 
 
