@@ -5,17 +5,19 @@ function exampleDynamics
 
 %% preamble
 Ngrid = 10; % dimension of grid of initial conditions per axis
-Tmax = 5;  % time length
-Wmax = 3;   % max wavevector used
+Tmax = 5;   % trajectory time length
+Wmax = 3;   % max wavevector used (results in (2 Wmax + 1)^2 observables used
+h = -1;     % diffusion bandwidth - <= 0 to autodetect (see nss.m)
 
 %% Compute or load trajectories from a file
 demofile = 'exampleDynamicsTrajectories.mat';
 if exist(demofile,'file')
-    disp('Loading trajectories');
+    disp(['Loading trajectories. Erase ' demofile ' to recompute.']);
     load(demofile);
 else
-    disp('Computing trajectories');
-    [xy, t, icgridX, icgridY] = computeTrajectories(Ngrid, Tmax);
+    disp('Computing trajectories.');
+    [xy, t, icgridX, icgridY] = computeTrajectories(Ngrid, Tmax); % parameters set at the beginning of the file
+    disp(['Saving trajectories to ' demofile]);    
     save(demofile, 'xy', 't', 'icgridX', 'icgridY');
 end
 Npoints = size(xy,3);
@@ -26,7 +28,7 @@ Npoints = size(xy,3);
 
 %% generate all relevant wavevector pairs up to Wmax harmonic in each dimension
 disp('Generating wavevectors')
-[Wx,Wy] = meshgrid(-Wmax:Wmax);
+[Wx,Wy] = meshgrid(-Wmax:Wmax); % Wmax is set at the beginning
 wv = [Wx(:), Wy(:)].';
 % wv is a 2 x K matrix of wavevectors -
 % K = (2*Wmax+1)^2
@@ -47,6 +49,9 @@ else
 end
 
 disp('Computing averages')
+if matlabpool('size') < 2
+    warning('Open parallel threads by running "matlabpool open" to speed up computation of averages, if desired.')
+end
 parfor n = 1:Npoints
     [myavg_real, myavg_imag] = average( t, xy(:,:,n), wv, [xscale, yscale] );
     avgs(:,n) = complex(myavg_real, myavg_imag);
@@ -73,8 +78,7 @@ D = distance( avgs, wv, -(spaceDim + 1)/2 );
 %% compute diffusion coordinates for trajectories
 disp('Computing diffusion coordinates');
 Nvec = 10; % we need only a few eigenvectors
-h = -1;
-[evectors, evalues] = dist2diff(D, Nvec, h); % h = -1 indicates that the heat bandwidth is to be estimated
+[evectors, evalues] = dist2diff(D, Nvec, h); % % h is set at the beginning of the file
 % evalues is not really important for visualization
 % each column in evectors is Npoints long - elements give diffusion coordinates for
 % corresponding trajectory
@@ -134,6 +138,9 @@ Nsteps = numel(t);
 
 xy = zeros( Nsteps, 2, Npoints );
 
+if matlabpool('size') < 2
+    warning('Open parallel threads by running "matlabpool open" to speed up computation of trajectories, if desired.')
+end
 parfor n = 1:Npoints
     p = ic(:, n);
     [~,yout] = ode23t( @vf, t, p );
