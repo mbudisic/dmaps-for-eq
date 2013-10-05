@@ -24,4 +24,4 @@ tmp*/
 *.tmp
 *.dvi
 *.aux
-
+auto/

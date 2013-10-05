@@ -7,7 +7,7 @@
 <meta http-equiv="Content-Type" content="text/html;charset=iso-8859-1"/>
 <meta name="title" content="Diffusion Maps for Dynamics"/>
 <meta name="generator" content="Org-mode"/>
-<meta name="generated" content="2013-10-05T10:11-0500"/>
+<meta name="generated" content="2013-10-05T10:44-0500"/>
 <meta name="author" content="Marko Budisic"/>
 <meta name="description" content=""/>
 <meta name="keywords" content=""/>
@@ -214,10 +214,10 @@ for the JavaScript code below.
 This is my implementation of Coifman/Lafon algorithm for efficient embeddings of high-dimensional data sets. The use can best be seen in two examples: 
 </p>
 <dl>
-<dt><a href="#sec-1-2">exampleTorus</a>.m</dt><dd>demonstrate that the algorithm successfully embeds a 2-torus
+<dt><a href="#sec-1-2"><code>exampleTorus</code></a></dt><dd>demonstrate that the algorithm successfully embeds a 2-torus
 
 </dd>
-<dt><a href="#sec-1-1">exampleDynamics</a>.m</dt><dd>demonstrate how algorithm is used on trajectories of a dynamical system
+<dt><a href="#sec-1-1"><code>exampleDynamics</code></a></dt><dd>demonstrate how algorithm is used on trajectories of a dynamical system
 </dd>
 </dl>
 
@@ -246,20 +246,20 @@ A brief overview of functionalities in their calling order is provided below. Ea
 <ul>
 <li><a href="#sec-1">1 Computation functions</a>
 <ul>
-<li><a href="#sec-1-1">1.1 exampleDynamics.m</a>
+<li><a href="#sec-1-1">1.1 <code>exampleDynamics.m</code></a>
 <ul>
-<li><a href="#sec-1-1-1">1.1.1 computeAverages.m</a></li>
-<li><a href="#sec-1-1-2">1.1.2 sobolevMatrix.m</a></li>
-<li><a href="#sec-1-1-3">1.1.3 dist2diff.m</a></li>
+<li><a href="#sec-1-1-1">1.1.1 <code>computeAverages.m</code></a></li>
+<li><a href="#sec-1-1-2">1.1.2 <code>sobolevMatrix.m</code></a></li>
+<li><a href="#sec-1-1-3">1.1.3 <code>dist2diff.m</code></a></li>
+<li><a href="#sec-1-1-4">1.1.4 <code>nss.m</code></a></li>
 </ul>
 </li>
-<li><a href="#sec-1-2">1.2 exampleTorus.m</a></li>
+<li><a href="#sec-1-2">1.2 <code>exampleTorus.m</code></a></li>
 </ul>
 </li>
 <li><a href="#sec-2">2 Visualization functions</a>
 <ul>
-<li><a href="#sec-2-1">2.1 viewHarmonic.m</a></li>
-<li><a href="#sec-2-2">2.2 pseudocolor.m</a></li>
+<li><a href="#sec-2-1">2.1 <code>viewHarmonic.m</code></a></li>
 </ul>
 </li>
 </ul>
@@ -275,82 +275,118 @@ A brief overview of functionalities in their calling order is provided below. Ea
 </div>
 
 <div id="outline-container-1-1" class="outline-3">
-<h3 id="sec-1-1"><a name="exampleDynamics" id="exampleDynamics"></a><span class="section-number-3">1.1</span> exampleDynamics.m</h3>
+<h3 id="sec-1-1"><a name="exampleDynamics" id="exampleDynamics"></a><span class="section-number-3">1.1</span> <code>exampleDynamics.m</code></h3>
 <div class="outline-text-3" id="text-1-1">
 
-<p>A file demonstrating workflow for analyzing dynamical systems. The dynamics
-used is a simple planar double-well potential. It should be easy enough to generalize to a 3d system.
+<p>A file demonstrating workflow for analyzing dynamical systems. The
+dynamics used is a simple planar double-well potential. It should be
+easy enough to generalize to a 3d system.
+</p>
+<p>
+The parameters specifying resolution, length of simulated
+trajectories, and number of Fourier harmonics are at the beginning of
+the file. They are set to low numbers to facilitate verifying that
+everything runs smoothly. You can increase them to get a better
+resolution, but slower run-time, and see how each of them impacts the
+final picture.
+</p>
+<p>
+Note that the exampleDynamics will store computed trajectories, but not the averages, into <code>exampleDynamicsTrajectories.mat</code>. If you change <code>Ngrid</code> or <code>Tmax</code>, erase <code>exampleDynamicsTrajectories.mat</code> to re-compute trajectories.
+</p>
+<p>
+Computation of trajectories and computation of averages can exploit any parallel threads that might be open. Run
+</p>
+<p>
+<code>&gt;&gt; matlabpool open</code>
+</p>
+<p>
+before running the example for a speedup.
 </p>
 
 </div>
 
 <div id="outline-container-1-1-1" class="outline-4">
-<h4 id="sec-1-1-1"><span class="section-number-4">1.1.1</span> computeAverages.m</h4>
+<h4 id="sec-1-1-1"><span class="section-number-4">1.1.1</span> <code>computeAverages.m</code></h4>
 <div class="outline-text-4" id="text-1-1-1">
 
 
 <p>
-Computes averages of a Fourier basis along a single state-space trajectory. 
-As a result of this function, each trajectory is "described" using a vector of time averages.
+Computes averages of a Fourier basis along a single state-space
+trajectory.  As a result of this function, each trajectory is
+"described" using a vector of time averages.
 </p>
 <p>
-(The code is written so that Matlab Coder can automatically generate MEX file from it, speeding up execution. To generate mex files, run
-'deploytool -build computeAverages.prj'
-in Matlab. The rest of the code will automatically use MEX if available.)
+(The code is written so that Matlab Coder can automatically generate
+MEX file from it, speeding up execution. To generate mex files, run
 </p>
-
-
+<p>
+<code>&gt;&gt; deploytool -build computeAverages.prj</code>
+</p>
+<p>
+in Matlab. The rest of the
+code will automatically use MEX if available.)
+</p>
 </div>
 
 </div>
 
 <div id="outline-container-1-1-2" class="outline-4">
-<h4 id="sec-1-1-2"><a name="sobolevMatrix" id="sobolevMatrix"></a><span class="section-number-4">1.1.2</span> sobolevMatrix.m</h4>
+<h4 id="sec-1-1-2"><a name="sobolevMatrix" id="sobolevMatrix"></a><span class="section-number-4">1.1.2</span> <code>sobolevMatrix.m</code></h4>
 <div class="outline-text-4" id="text-1-1-2">
 
 
 <p>
-Computes pairwise-distances between vectors of time averages using a Sobolev norm. If the state-space is D-dimensional, the recommended Sobolev index is s = -(D+1)/2.
+Computes pairwise-distances between vectors of time averages using a Sobolev norm. If the state-space is \(D\)-dimensional, the recommended Sobolev index is \(s = -(D+1)/2\).
 The space of trajectories (ergodic quotient for infinite averages) can be thought of as a graph, where vertices correspond to trajectories, and edges are Sobolev distances stored in the resulting matrix.
 </p>
 <p>
-(The code is written so that Matlab Coder can automatically generate MEX file from it, speeding up execution. To generate mex files, run
-'deploytool -build sobolevMatrix.prj'
-in Matlab. The rest of the code will automatically use MEX if available.)
+(The code is written so that Matlab Coder can automatically generate
+MEX file from it, speeding up execution. To generate mex files, run
+</p>
+<p>
+<code>&gt;&gt; deploytool -build computeAverages.prj</code>
+</p>
+<p>
+in Matlab. The rest of the
+code will automatically use MEX if available.)
 </p>
 </div>
 
 </div>
 
 <div id="outline-container-1-1-3" class="outline-4">
-<h4 id="sec-1-1-3"><a name="dist2diff" id="dist2diff"></a><span class="section-number-4">1.1.3</span> dist2diff.m</h4>
+<h4 id="sec-1-1-3"><a name="dist2diff" id="dist2diff"></a><span class="section-number-4">1.1.3</span> <code>dist2diff.m</code></h4>
 <div class="outline-text-4" id="text-1-1-3">
 
 
 <p>
-Computes diffusion coordinates on a graph based on the pairwise-distance matrix between vertices, like the one generated by <a href="#sec-1-1-2">sobolevMatrix</a>. Typically, only a few diffusion coordinates are needed, but it's possible to compute as many diffusion coordinates as there are trajectories (dimension of the distance matrix).
+Computes diffusion coordinates on a graph based on the pairwise-distance matrix between vertices, like the one generated by <a href="#sec-1-1-2"><code>sobolevMatrix</code></a> Typically, only a few diffusion coordinates are needed, but it's possible to compute as many diffusion coordinates as there are trajectories (dimension of the distance matrix).
 </p>
 <p>
-The diffusion coordinates algorithm depends on the bandwidth parameter  \(h\), which models the speed at which diffusion proceeds. For data analysis, this parameter can be determined heuristically using, e.g., <a href="#sec-1-1-3-1">nss</a> function, or it can be tuned manually. A value that is out of acceptable range will result in "important" diffusion eigenvectors, i.e., those carrying new information, to be relegated to higher indices. If \(h\) is too small, the ergodic quotient graph will be artificially disconnected, and as a consequence, first diffusion coordinates will look like indicator functions supported on the disconnected components. If \(h\) is too large, the first coordinate will be monotonic over data, but the next ones will look like higher harmonics over the same one-dimensional set. In both cases, higher-index diffusion coordinates would find the "important" geometry of the data set, but it's not easy to say a priori at which coordinate this would happen.
+The diffusion coordinates algorithm depends on the bandwidth parameter  \(h\), which models the speed at which diffusion proceeds. For data analysis, this parameter can be determined heuristically using, e.g., <a href="#sec-1-1-4"><code>nss</code></a>function, or it can be tuned manually. A value that is out of acceptable range will result in "important" diffusion eigenvectors, i.e., those carrying new information, to be relegated to higher indices. If \(h\) is too small, the ergodic quotient graph will be artificially disconnected, and as a consequence, first diffusion coordinates will look like indicator functions supported on the disconnected components. If \(h\) is too large, the first coordinate will be monotonic over data, but the next ones will look like higher harmonics over the same one-dimensional set. In both cases, higher-index diffusion coordinates would find the "important" geometry of the data set, but it's not easy to say a priori at which coordinate this would happen.
 </p>
 <p>
-In any case, the algorithm is tolerant to order-of-magnitude changes in \(h\), so the choice is not that crucial. The heuristic algorithm <a href="#sec-1-1-3-1">nss</a> gives a good starting point for any tuning that might be needed.
+In any case, the algorithm is tolerant to order-of-magnitude changes in \(h\), so the choice is not that crucial. The heuristic algorithm <a href="#sec-1-1-4"><code>nss</code></a> gives a good starting point for any tuning that might be needed.
 </p>
-<ul>
-<li id="sec-1-1-3-1"><a name="nss" id="nss"></a>nss.m<br/>
+</div>
+
+</div>
+
+<div id="outline-container-1-1-4" class="outline-4">
+<h4 id="sec-1-1-4"><a name="nss" id="nss"></a><span class="section-number-4">1.1.4</span> <code>nss.m</code></h4>
+<div class="outline-text-4" id="text-1-1-4">
+
 
 <p>
 Heuristically calculates a suitable diffusion bandwidth based on input data. The bandwidth is set to the minimal number \(h\) such that \(h\)-distance of any vertex contains a selected number of other vertices. This ensures one-step diffusion-connectedness of the graph, in coarse terms.
 </p>
-</li>
-</ul>
 </div>
 </div>
 
 </div>
 
 <div id="outline-container-1-2" class="outline-3">
-<h3 id="sec-1-2"><a name="exampleTorus" id="exampleTorus"></a><span class="section-number-3">1.2</span> exampleTorus.m</h3>
+<h3 id="sec-1-2"><a name="exampleTorus" id="exampleTorus"></a><span class="section-number-3">1.2</span> <code>exampleTorus.m</code></h3>
 <div class="outline-text-3" id="text-1-2">
 
 
@@ -360,9 +396,9 @@ A sanity-check example. The vertices are described by values of Fourier-harmonic
 <p>
 The example calls the same functions as seen before:
 </p><ul>
-<li><a href="#sec-1-1-2">sobolevMatrix.m</a>
+<li><a href="#sec-1-1-2"><code>sobolevMatrix.m</code></a>
 </li>
-<li><a href="#sec-1-1-3">dist2diff.m</a>
+<li><a href="#sec-1-1-3"><code>dist2diff.m</code></a>
 </li>
 </ul>
 
@@ -381,18 +417,11 @@ The example calls the same functions as seen before:
 </div>
 
 <div id="outline-container-2-1" class="outline-3">
-<h3 id="sec-2-1"><span class="section-number-3">2.1</span> viewHarmonic.m</h3>
+<h3 id="sec-2-1"><span class="section-number-3">2.1</span> <code>viewHarmonic.m</code></h3>
 <div class="outline-text-3" id="text-2-1">
 
-
-</div>
-
-</div>
-
-<div id="outline-container-2-2" class="outline-3">
-<h3 id="sec-2-2"><span class="section-number-3">2.2</span> pseudocolor.m</h3>
-<div class="outline-text-3" id="text-2-2">
-
+<p>Visualize a Fourier harmonic on a rectangular domain, based on its wavenumber and domain width/height.
+</p>
 
 
 
@@ -402,7 +431,7 @@ The example calls the same functions as seen before:
 </div>
 
 <div id="postamble">
-<p class="date">Date: 2013-10-05T10:11-0500</p>
+<p class="date">Date: 2013-10-05T10:44-0500</p>
 <p class="author">Author: Marko Budisic</p>
 <p class="creator"><a href="http://orgmode.org">Org</a> version 7.9.3f with <a href="http://www.gnu.org/software/emacs/">Emacs</a> version 24</p>
 <a href="http://validator.w3.org/check?uri=referer">Validate XHTML 1.0</a>
