@@ -17,11 +17,11 @@ Nvec = 6; % number of diffusion eigenvectors to return eigenvectors
 disp('Computing Sobolev distance matrix...')
 
 try
-    D = sobolevmatrix_mex( vals.', wv.', s );
+    D = sobolevMatrix_mex( vals.', wv.', s );
 catch
-    disp('Something is wrong with _mex file -- does not exist? Run "deploytool -build sobolevmatrix.prj" in Matlab prompt.')
+    disp('Something is wrong with _mex file -- does not exist? Run "deploytool -build sobolevMatrix.prj" in Matlab prompt.')
     try
-        D = sobolevmatrix( vals.', wv.', s );
+        D = sobolevMatrix( vals.', wv.', s );
     catch ME
         disp('Error with .m file as well')
         rethrow(ME)
