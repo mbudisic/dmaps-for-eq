@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <deployment-project plugin="plugin.matlabcoder" plugin-version="R2013a">
-  <configuration target="target.matlab.coder" target-name="MEX, C, and C++ Code Generation" name="computeAverages" location="." file="./computeAverages.prj" build-checksum="4221658200">
+  <configuration target="target.matlab.coder" target-name="MEX, C, and C++ Code Generation" name="computeAverages" location="." file="./computeAverages.prj" build-checksum="155471394">
     <profile key="profile.mex">
       <param.MergeInstrumentationResults>false</param.MergeInstrumentationResults>
       <param.BuiltInstrumentedMex>false</param.BuiltInstrumentedMex>
@@ -412,7 +412,7 @@
           </Input>
           <Input Name="xy">
             <Class>double</Class>
-            <Size>:inf x 2</Size>
+            <Size>:inf x :inf</Size>
             <Value />
             <InitialValue />
             <UserDefined>true</UserDefined>
@@ -420,23 +420,15 @@
           </Input>
           <Input Name="wv">
             <Class>double</Class>
-            <Size>2 x :inf</Size>
+            <Size>:inf x :inf</Size>
             <Value />
             <InitialValue />
             <UserDefined>true</UserDefined>
             <Complex>false</Complex>
           </Input>
-          <Input Name="xscale">
+          <Input Name="scales">
             <Class>double</Class>
-            <Size>1 x 1</Size>
-            <Value />
-            <InitialValue />
-            <UserDefined>true</UserDefined>
-            <Complex>false</Complex>
-          </Input>
-          <Input Name="yscale">
-            <Class>double</Class>
-            <Size>1 x 1</Size>
+            <Size>1 x :inf</Size>
             <Value />
             <InitialValue />
             <UserDefined>true</UserDefined>
