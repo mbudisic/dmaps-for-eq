@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <deployment-project plugin="plugin.matlabcoder" plugin-version="R2013a">
-  <configuration target="target.matlab.coder" target-name="MEX, C, and C++ Code Generation" name="computeAverages" location="/Users/mbudisic/Work/MatlabToolbox/DiffusionMaps" file="/Users/mbudisic/Work/MatlabToolbox/DiffusionMaps/computeAverages.prj" build-checksum="4221658200">
+  <configuration target="target.matlab.coder" target-name="MEX, C, and C++ Code Generation" name="computeAverages" location="." file="./computeAverages.prj" build-checksum="4221658200">
     <profile key="profile.mex">
       <param.MergeInstrumentationResults>false</param.MergeInstrumentationResults>
       <param.BuiltInstrumentedMex>false</param.BuiltInstrumentedMex>
@@ -302,7 +302,7 @@
     <param.outputfile>${PROJECT_ROOT}/computeAverages_mex.mexmaci64</param.outputfile>
     <param.version>R2012a</param.version>
     <param.HasECoderFeatures>true</param.HasECoderFeatures>
-    <param.mex.mainhtml>/Users/mbudisic/Work/MatlabToolbox/DiffusionMaps/codegen/mex/computeAverages/html/index.html</param.mex.mainhtml>
+    <param.mex.mainhtml>./codegen/mex/computeAverages/html/index.html</param.mex.mainhtml>
     <param.grt.mainhtml />
     <param.CallGeneratedCodeFromTest>true</param.CallGeneratedCodeFromTest>
     <param.DefaultTestFile />
@@ -448,7 +448,7 @@
     <fileset.testbench />
     <fileset.package />
     <build-deliverables>
-      <file name="computeAverages_mex.mexmaci64" location="/Users/mbudisic/Work/MatlabToolbox/DiffusionMaps" optional="false">/Users/mbudisic/Work/MatlabToolbox/DiffusionMaps/computeAverages_mex.mexmaci64</file>
+      <file name="computeAverages_mex.mexmaci64" location="." optional="false">./computeAverages_mex.mexmaci64</file>
     </build-deliverables>
     <workflow />
     <matlab>
