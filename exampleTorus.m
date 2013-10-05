@@ -19,7 +19,7 @@ disp('Computing Sobolev distance matrix...')
 try
     D = sobolevmatrix_mex( vals.', wv.', s );
 catch
-    disp('Something is wrong with _mex file -- does not exist? Try opening sobolevmatrix.prj and compiling.')
+    disp('Something is wrong with _mex file -- does not exist? Run "deploytool -build sobolevmatrix.prj" in Matlab prompt.')
     try
         D = sobolevmatrix( vals.', wv.', s );
     catch ME
@@ -32,7 +32,7 @@ end
 disp('Computing diffusion eigenvectors...')
 [evectors, evalues] = dist2diff(D, Nvec, h); % h = -1 indicates that the heat bandwidth is to be estimated
 
-%% THE END
+%% THE END OF COMPUTATION
 
 %% visualization of results (just for purposes of demonstration)
 
