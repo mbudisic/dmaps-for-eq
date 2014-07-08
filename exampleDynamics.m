@@ -4,21 +4,24 @@ function exampleDynamics
 % Demonstration of use of Diffusion Maps for analysis of dynamical systems.
 
 %% preamble
-Ngrid = 10; % dimension of grid of initial conditions per axis
-Tmax = 5;   % trajectory time length
-Wmax = 3;   % max wavevector used (results in (2 Wmax + 1)^2 observables used
-h = -1;     % diffusion bandwidth - <= 0 to autodetect (see nss.m)
+Ngrid = 30; % dimension of grid of initial conditions per axis
+Tmax = 20;   % trajectory time length
+Wmax = 5;   % max wavevector used (results in (2 Wmax + 1)^2 observables used
+hband = 0;  % diffusion bandwidth - <= 0 to autodetect (see nss.m)
+fwdbwd = 0; % averaging direction -- forward when > 0, backward
+            % when < 0, time-symmetric when == 0
 
 %% Compute or load trajectories from a file
-demofile = './exampleDynamicsTrajectories.mat';
+demofile = 'exampleDynamicsTrajectories.mat';
 if exist(demofile,'file')
     disp(['Loading trajectories. Erase ' demofile ' to recompute.']);
     load(demofile);
 else
     disp('Computing trajectories.');
-    [xy, t, icgridX, icgridY] = computeTrajectories(Ngrid, Tmax); % parameters set at the beginning of the file
+    [xy, t, icgridX, icgridY,ic] = computeTrajectories(Ngrid, Tmax, 0);
+    % parameters set at the beginning of the file
     disp(['Saving trajectories to ' demofile]);    
-    save(demofile, 'xy', 't', 'icgridX', 'icgridY');
+    save(demofile, 'xy', 't', 'icgridX', 'icgridY', 'ic');
 end
 Npoints = size(xy,3);
 % xy contains trajectories in format
@@ -78,7 +81,7 @@ D = distance( avgs, wv, -(spaceDim + 1)/2 );
 %% compute diffusion coordinates for trajectories
 disp('Computing diffusion coordinates');
 Nvec = 10; % we need only a few eigenvectors
-[evectors, evalues] = dist2diff(D, Nvec, h); % % h is set at the beginning of the file
+[evectors, evalues] = dist2diff(D, Nvec, hband); % % h is set at the beginning of the file
 % evalues is not really important for visualization
 % each column in evectors is Npoints long - elements give diffusion coordinates for
 % corresponding trajectory
@@ -88,24 +91,36 @@ disp('Visualizing')
 %% visualization of results (just for purposes of demonstration)
 [X,Y] = meshgrid( icgridX, icgridY );
 colorind = 1;
-color = evectors(:,colorind);
+color = ic(colorind,:);
 
 % embed into three dominant eigenvectors and color using original
 % parameters
 figure('name','Embedding dynamics in three diffusion eigenvectors')
-subplot(2,3,1);
+
 scatter3(evectors(:,1), evectors(:,2), evectors(:,3), 5, color, 'fill');
 xlabel('Evector 1'); ylabel('Evector 2'); zlabel('Evector 3');
 axis equal
 axis square
-title(sprintf('Color: Diffusion coordinate %d',colorind))
+title(sprintf('Color: Coordinate %d of initial condition',colorind))
 colormap(jet)
 set(gca,'Color',[0.5,0.5,0.5])
 caxis( [-1,1]*max(abs(color)) );
+a1 = gca;
+
+figure('name','Coloring of the state space by eigenvectors')
+% compute velocity field - for orientation
+
+icx = ic(1,:);
+icy = ic(2,:);
+k = 1;
+b = 2;
+H = icy.^2/2 - k*(icx.^2/2 - b*icx.^4/4)
+W = reshape( H, size(X) );
+
 
 % color the state space using diffusion coordinates
-for n = 2:6
-    subplot(2,3,n);
+for n = 2:10
+    subplot(3,3,n-1);
     sel = n-1;
     colorfield = reshape( evectors(:,sel), size(X) );
     pcolor(X, Y, colorfield); shading flat;
@@ -114,6 +129,10 @@ for n = 2:6
     xlabel('x'); ylabel('y');
     title(sprintf('Diffusion evector %d', sel));
     colorbar
+    hold on;
+    contour(X, Y, W,'k');
+    
+    
 end
 
 end
@@ -121,7 +140,8 @@ end
 %% Auxiliaries
 
 
-function [xy, t, icgridX, icgridY] = computeTrajectories(Ngrid, Tmax)
+function [xy, t, icgridX, icgridY, ic] = computeTrajectories(Ngrid, Tmax, ...
+                                                    fwdbwd)
 % Compute an ensemble of trajectories started at a uniform grid of 
 % points on the state space.
 
@@ -133,9 +153,26 @@ ic = [X(:), Y(:)].';
 Npoints = size(ic, 2);
 
 % time vector
-t = 0:1e-2:Tmax;
-Nsteps = numel(t);
+tpos = [];
+tneg = [];
+if fwdbwd == 0
+  disp('Symmetric time average')
+  tpos = 0:1e-2:(Tmax/2);
+  tneg = -( 0:1e-2:(Tmax/2) );
+  t = [tneg(end:-1:2), tpos];
+elseif fwdbwd > 0
+  disp('Forward average')  
+  tpos = 0:1e-2:Tmax;
+  tneg = [];
+  t = tpos;
+else
+  disp('Backward average')    
+  tpos = [];
+  tneg = -( 0:1e-2:(Tmax/2) );  
+  t = tneg(end:-1:2);
+end
 
+Nsteps = numel(t);
 xy = zeros( Nsteps, 2, Npoints );
 
 if matlabpool('size') < 2
@@ -143,9 +180,22 @@ if matlabpool('size') < 2
 end
 parfor n = 1:Npoints
     p = ic(:, n);
-    [~,yout] = ode23t( @vf, t, p );
-    xy(:,:,n) = yout;
+    if ~isempty(tpos) && isempty(tneg)
+      [~,ypos] = ode23t( @vf, tpos, p );
+      XYt = ypos;      
+    elseif isempty(tpos) && ~isempty(tneg)    
+      [~,yneg] = ode23t( @vf, tneg, p );
+      XYt = yneg;
+    else
+      [~,ypos] = ode23t( @vf, tpos, p );  
+      [~,yneg] = ode23t( @vf, tneg, p );      
+      XYt = [yneg(end:-1:2,:); ypos];      
+    end
+
+    xy(:,:,n) = XYt;
 end
+
+
 
 end
 
