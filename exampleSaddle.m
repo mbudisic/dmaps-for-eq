@@ -1,21 +1,22 @@
-function exampleDynamics
+function exampleSaddle
 % exampleDynamics
 %
 % Demonstration of use of Diffusion Maps for analysis of dynamical systems.
 
 %% preamble
-Ngrid = 30; % dimension of grid of initial conditions per axis
-Tmax = 3;   % trajectory time length
+Ngrid =30; % dimension of grid of initial conditions per axis
+Tmax = 10;   % trajectory time length
 Wmax = 5;   % max wavevector used (results in (2 Wmax + 1)^2 observables used
-hband = 0;  % diffusion bandwidth - <= 0 to autodetect (see nss.m)
-fwdbwd = 0; % averaging direction -- forward when > 0, backward
-            % when < 0, time-symmetric when == 0
+hband = 0;     % diffusion bandwidth - <= 0 to autodetect (see nss.m)
+fwdbwd = 0;
+
+Nvec = 10; % vectors to compute for diffusion maps
 
 % if you want to force the use of a certain vector for clustering, 
 % enter its index in k1, k2, or k3
 % otherwise leave as NaN
-k1 = 1;
-k2 = 2;
+k1 = NaN;
+k2 = NaN;
 k3 = NaN;
 kvec = [k1,k2,k3];
 clustersel = [true, true, false];
@@ -23,11 +24,10 @@ clustersel = [true, true, false];
 % cluster into 2 (one true element), 4 (two true elements), or 8
 % clusters (three true elements)
 assert(any(clustersel),'Set at least one clustering selection');
-fprintf('Clustering into %d clusters.\n', 2^sum(double(clustersel)));
-
+fprintf('Clustering into %d clusters. (change variable clustersel to alter).\n', 2^sum(double(clustersel)));
 
 %% Compute or load trajectories from a file
-demofile = 'exampleDynamicsTrajectories.mat';
+demofile = 'exampleSaddleTrajectories.mat';
 if exist(demofile,'file')
     disp(['Loading trajectories. Erase ' demofile ' to recompute.']);
     load(demofile);
@@ -54,8 +54,13 @@ K = size(wv,2);
 
 %% compute averages of Fourier functions along trajectories
 avgs = zeros( K, Npoints, 'like', 1+1j );
-xscale = 2*max(max(abs(xy(:,1,:))));
-yscale = 2*max(max(abs(xy(:,2,:))));
+
+% width and height of the minimal rectangle enclosing all
+% trajectories
+extentx=abs(xy(:,1,:));
+xscale = 2*prctile(extentx(:),63); 
+extenty=abs(xy(:,1,:));
+yscale = 2*prctile(extenty(:),63); 
 
 % select Matlab Coder MEX if it exists
 if exist('computeAverages_mex') == 3
@@ -92,8 +97,9 @@ D = distance( avgs, wv, -(spaceDim + 1)/2 );
 
 %% compute diffusion coordinates for trajectories
 disp('Computing diffusion coordinates');
-Nvec = 10; % we need only a few eigenvectors
-[evectors, evalues] = dist2diff(D, Nvec, hband); % % h is set at the beginning of the file
+[evectors, evalues] = dist2diff(D, Nvec, hband); % % h is set at
+                                                 % the beginning of
+                                                 % the file
 % evalues is not really important for visualization
 % each column in evectors is Npoints long - elements give diffusion
 % coordinates for the corresponding trajectory.
@@ -105,29 +111,50 @@ Nvec = 10; % we need only a few eigenvectors
 disp('Visualizing')
 %% visualization of results (just for purposes of demonstration)
 [X,Y] = meshgrid( icgridX, icgridY );
-
-% evaluate the Hamiltonian of the f
-icx = ic(1,:);
-icy = ic(2,:);
-k = 1;
-b = 2;
-H = icy.^2/2 - k*(icx.^2/2 - b*icx.^4/4);
+colorind = 1;
+color = evectors(:,colorind);
 
 % embed into three dominant eigenvectors and color using original
 % parameters
-figure('name','Embedding dynamics in three independent diffusion coordinates')
-scatter3(evectors(:,k1), evectors(:,k2), evectors(:,k3), 5, H.', 'fill');
+figure
+subplot(1,2,1);
+color = ic(1,:).';
+scatter3(evectors(:,k1), evectors(:,k2), evectors(:,k3), 5, color, ...
+         'fill');
 xlabel(sprintf('Coordinate %d',k1)); ylabel(sprintf('Coordinate %d',k2)); zlabel(sprintf('Coordinate %d',k3));
 
 axis equal
 axis square
-title({'Embedding dynamics in three independent';'diffusion coordinates';
- 'Color is the';'value of stream function'})
 
-colormap(hot)
-set(gca,'Color',[0.5,0.5,0.5])
-%caxis( [-1,1]*max(abs(H)) );
+title({'Color is the value of x-coordinate';'of initial condition'})
+
+colormap(jet)
+set(gca,'Color',repmat(0.7,[1,3]))
+caxis( [-1,1]*max(abs(color)) );
 a1 = gca;
+
+subplot(1,2,2);
+color = ic(2,:).';
+
+scatter3(evectors(:,k1), evectors(:,k2), evectors(:,k3), 5, color, ...
+         'fill');
+xlabel(sprintf('Coordinate %d',k1)); ylabel(sprintf('Coordinate %d',k2)); zlabel(sprintf('Coordinate %d',k3));
+axis equal
+axis square
+title({'Color is the value of x-coordinate';'of initial condition'})
+colormap(jet)
+set(gca,'Color',repmat(0.7,[1,3]))
+caxis( [-1,1]*max(abs(color)) );
+a2 = gca;
+
+set(gcf,'color','white');
+subtitle('Embedding dynamics in three independent diffusion coordinates');
+
+% link camera angles for both plots
+clear LINKROT;
+global LINKROT;
+LINKROT = linkprop([a1,a2],'CameraPosition');
+
 % color the state space using diffusion coordinates
 figure
 for n = 2:10
@@ -139,7 +166,7 @@ for n = 2:10
     axis square;
     xlabel('x'); ylabel('y');
     title(sprintf('Diffusion coordinate %d', sel));
-    overlay(ic, X, Y);    
+    overlay(xy);
     colorbar
 end
 set(gcf,'color','white');
@@ -147,6 +174,7 @@ subtitle('Coloring of the state space by diffusion coordinates');
 
 figure
 pl = 1;
+
 for n = ([k1,k2,k3]+1)
     subplot(1,3,pl);
 
@@ -155,15 +183,12 @@ for n = ([k1,k2,k3]+1)
     pcolor(X, Y, sign(colorfield)); shading flat;
     axis square;
     xlabel('x'); ylabel('y');
-    overlay(ic, X, Y);        
+    overlay(xy);
     title(sprintf('Diff. coordinate (%d)', sel));
     pl = pl+1;    
-    %colorbar
 end
 set(gcf,'color','white');
 subtitle('State space colored by signs of independent coordinates');
-
-
 
 %% Clustering
 
@@ -179,11 +204,12 @@ subtitle('State space colored by signs of independent coordinates');
 % serious implementation, this clustering step might be omitted to
 % retain the fine-grained classification, or replaced with a more
 % sophisticated algorithm.
+
 figure;
 
 disp('Coarse clustering')
 zeromean = evectors - repmat( mean(evectors,1), [Npoints,1] );
-clusterweight = 2.^[2,1,0].';
+clusterweight = 3.^[2,1,0].';
 clusterweight(~clustersel) = 0;
 
 clusters = round( [sign(zeromean(:,[k1,k2,k3])) + 1] * clusterweight );
@@ -194,7 +220,7 @@ pcolor(X, Y, colorfield); shading flat;
 axis square;
 xlabel('x'); ylabel('y');
 title('Initial conditions labeled by clusters');
-overlay(ic, X, Y);
+overlay(xy);
 colormap(jet)
 colorbar
 
@@ -212,6 +238,7 @@ set(gcf,'color','white');
 subtitle('Sign-based clusters');
 
 end
+
 %% Auxiliaries
 
 
@@ -253,37 +280,35 @@ xy = zeros( Nsteps, 2, Npoints );
 parfor n = 1:Npoints
     p = ic(:, n);
     if ~isempty(tpos) && isempty(tneg)
-      [~,ypos] = ode23t( @vf, tpos, p );
+      [~,ypos] = ode45( @vf, tpos, p );
       XYt = ypos;      
     elseif isempty(tpos) && ~isempty(tneg)    
-      [~,yneg] = ode23t( @vf, tneg, p );
+      [~,yneg] = ode45( @vf, tneg, p );
       XYt = yneg;
     else
-      [~,ypos] = ode23t( @vf, tpos, p );  
-      [~,yneg] = ode23t( @vf, tneg, p );      
+      [~,ypos] = ode45( @vf, tpos, p );  
+      [~,yneg] = ode45( @vf, tneg, p );      
       XYt = [yneg(end:-1:2,:); ypos];      
     end
 
     xy(:,:,n) = XYt;
 end
 
-
-
 end
 
+%% Velocity field -- linear saddle with axes rotated by angle a
 function u = vf(t,p)
-% vector field -- double well potential
-k = 1;
-b = 2;
-
 u = zeros(2, numel(t) );
 
-% H(x,y) = y^2/2 - k(x^2/2 - b*x^4/4)
 x = p(1,:);
 y = p(2,:);
 
-u(1,:) = -y;
-u(2,:) = -k*(x - b*x.^3);
+a = 0;
+
+T = [cos(a) sin(a); -sin(a), cos(a)];
+
+u = inv(T)*diag([2,-1])*T*p;
+
 end
 
 function [k1,k2,k3] = threeIndependent( coord, kvec )
@@ -354,28 +379,28 @@ function [ax,h]=subtitle(text)
 %           returns handles to both the axis and the title.
 % ax=subtitle(text)
 %           returns a handle to the axis only.
-ax=axes('Units','Normal','Position',[.075 .075 .85 .85],'Visible','off');
+%
+% Taken from:
+% http://www.mathworks.com/matlabcentral/answers/100459-how-can-i-insert-a-title-over-a-group-of-subplots
+  
+ax=axes('Units','Normal','Position',[.075 .075 .85 .85],'Visible', ...
+        'off');
+get(ax)
 set(get(ax,'Title'),'Visible','on');
 uistack(ax,'bottom') % push title axis to the bottom
 title(text);
 if (nargout < 2)
-    return
+  return
 end
 h=get(ax,'Title');
 end
 
 % overlay function to plot on top of color plots
 % e.g., simulated trajectories or hamiltonian level curves
-function overlay(ic, X, Y)
+function overlay(xy)
   hold on
-  % evaluate the Hamiltonian of the f
-  icx = ic(1,:);
-  icy = ic(2,:);
-  k = 1;
-  b = 2;
-  H = icy.^2/2 - k*(icx.^2/2 - b*icx.^4/4);
-  hold on; 
-  contour(X,Y,reshape(H,size(X)),...
-          'Color', 0.7*ones(1,3)); 
-  hold off;
+  for k = 1:20:size(xy,3)
+    plot( squeeze(xy(:,1,k)), squeeze(xy(:,2,k)),...
+          'Color', 0.7*ones(1,3) ); hold on;
+  end
 end
