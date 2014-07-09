@@ -26,10 +26,10 @@ assert( h > 0, 'Bandwidth has to be positive')
 
 %% unbiased heat kernel
 A = exp( -D/(4*h)); % heat kernel evaluation
-
+disp('Heat kernel evaluated')
 p = sum(A,1);    % estimated sampling density
 Ahat = A ./ (p.' * p); % remove sampling density bias from heat kernel
-
+disp('Heat kernel de-biased')
 
 %% convert unbiased heat kernel to a symmetrized Markov chain matrix
 symmass_col = sqrt(sum(Ahat,1));
@@ -37,11 +37,16 @@ symmass_row = sqrt(sum(Ahat,2));
 
 scaling = (symmass_row * symmass_col);
 
+disp('Scaling computed')
+
 assert( size(scaling,1) == size(Ahat,1) );
 assert( size(scaling,2) == size(Ahat,2) );
 
 S = Ahat ./ scaling;
+
 assert( norm(S - S.') < 1e-16, 'Symmetrized matrix not symmetric! Normof antisymmetric component: %e', norm(S - S.'))
+
+disp('Eigenvector computation')
 
 %% compute eigenvectors of the heat Markov chain
 opts.issym = true;
