@@ -1,11 +1,11 @@
-function exampleDynamics
+function setname = exampleDynamics
 % exampleDynamics
 %
 % Demonstration of use of Diffusion Maps for analysis of dynamical systems.
 
 %% preamble
 Ngrid = 30; % dimension of grid of initial conditions per axis
-Tmax = 3;   % trajectory time length
+Tmax = 10;   % trajectory time length
 Wmax = 5;   % max wavevector used (results in (2 Wmax + 1)^2 observables used
 hband = 0;  % diffusion bandwidth - <= 0 to autodetect (see nss.m)
 fwdbwd = 0; % averaging direction -- forward when > 0, backward
@@ -27,7 +27,8 @@ fprintf('Clustering into %d clusters.\n', 2^sum(double(clustersel)));
 
 
 %% Compute or load trajectories from a file
-demofile = 'exampleDynamicsTrajectories.mat';
+demofile = sprintf('exampleDynamicsTrajectories_T%.1f.mat',Tmax);
+setname = demofile(1:end-4);
 if exist(demofile,'file')
     disp(['Loading trajectories. Erase ' demofile ' to recompute.']);
     load(demofile);
@@ -117,7 +118,10 @@ H = icy.^2/2 - k*(icx.^2/2 - b*icx.^4/4);
 % parameters
 figure('name','Embedding dynamics in three independent diffusion coordinates')
 scatter3(evectors(:,k1), evectors(:,k2), evectors(:,k3), 5, H.', 'fill');
-xlabel(sprintf('Coordinate %d',k1)); ylabel(sprintf('Coordinate %d',k2)); zlabel(sprintf('Coordinate %d',k3));
+xlabel(sprintf('Coordinate %d',k1)); 
+ylabel(sprintf('Coordinate %d',k2)); 
+zlabel(sprintf('Coordinate %d',k3));
+set(gcf,'Color','white');
 
 axis equal
 axis square
@@ -125,7 +129,7 @@ title({'Embedding dynamics in three independent';'diffusion coordinates';
  'Color is the';'value of stream function'})
 
 colormap(hot)
-set(gca,'Color',[0.5,0.5,0.5])
+set(gca,'Color',[0.7,0.7,0.7])
 %caxis( [-1,1]*max(abs(H)) );
 a1 = gca;
 % color the state space using diffusion coordinates

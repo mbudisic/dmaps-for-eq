@@ -1,11 +1,11 @@
-function exampleSaddle
+function setname = exampleSaddle
 % exampleDynamics
 %
 % Demonstration of use of Diffusion Maps for analysis of dynamical systems.
 
 %% preamble
 Ngrid =30; % dimension of grid of initial conditions per axis
-Tmax = 10;   % trajectory time length
+Tmax = 3;   % trajectory time length
 Wmax = 5;   % max wavevector used (results in (2 Wmax + 1)^2 observables used
 hband = 0;     % diffusion bandwidth - <= 0 to autodetect (see nss.m)
 fwdbwd = 0;
@@ -15,8 +15,8 @@ Nvec = 10; % vectors to compute for diffusion maps
 % if you want to force the use of a certain vector for clustering, 
 % enter its index in k1, k2, or k3
 % otherwise leave as NaN
-k1 = NaN;
-k2 = NaN;
+k1 = 2;
+k2 = 3;
 k3 = NaN;
 kvec = [k1,k2,k3];
 clustersel = [true, true, false];
@@ -27,7 +27,8 @@ assert(any(clustersel),'Set at least one clustering selection');
 fprintf('Clustering into %d clusters. (change variable clustersel to alter).\n', 2^sum(double(clustersel)));
 
 %% Compute or load trajectories from a file
-demofile = 'exampleSaddleTrajectories.mat';
+demofile = sprintf('exampleSaddleTrajectories_T%.1f.mat',Tmax);
+setname = demofile(1:end-4);
 if exist(demofile,'file')
     disp(['Loading trajectories. Erase ' demofile ' to recompute.']);
     load(demofile);
@@ -180,7 +181,7 @@ for n = ([k1,k2,k3]+1)
 
     sel = n-1;
     colorfield = reshape( evectors(:,sel), size(X) );
-    pcolor(X, Y, sign(colorfield)); shading flat;
+    pcolor(X, Y, colorfield); shading flat;
     axis square;
     xlabel('x'); ylabel('y');
     overlay(xy);
@@ -188,7 +189,7 @@ for n = ([k1,k2,k3]+1)
     pl = pl+1;    
 end
 set(gcf,'color','white');
-subtitle('State space colored by signs of independent coordinates');
+subtitle('State space colored by coordinates used for clustering');
 
 %% Clustering
 
@@ -226,7 +227,7 @@ colorbar
 
 subplot(1,2,2)
 scatter3(evectors(:,k1), evectors(:,k2), evectors(:,k3), 5, clusters, 'fill');
-xlabel(sprintf('Evector %d',k1)); ylabel(sprintf('Evector %d',k2)); zlabel(sprintf('Evector %d',k3));
+xlabel(sprintf('Coordinate %d',k1)); ylabel(sprintf('Coordinate %d',k2)); zlabel(sprintf('Coordinate %d',k3));
 axis equal
 axis square
 title({'Embedding into three independent';['coordinates colored by ' ...

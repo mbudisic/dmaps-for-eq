@@ -16,7 +16,7 @@ N = size(V, 2);
 
 D = zeros(N);
 
-% compute wavenumbers - L1 norm of eigenvectors
+% compute wavenumbers - L1 norm of wavevectors
 wavenumbers = sum(abs(wv),1).';
 
 % compute sobolev weights
