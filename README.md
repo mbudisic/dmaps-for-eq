@@ -1,11 +1,6 @@
-                     Diffusion Maps for Dynamics
-                     ===========================
+# Diffusion Maps for Dynamics #
 
-Author: Marko Budisic
-Date: 2013-10-05 10:53:52 CDT
-
-
-by Marko Budisic ([mailto:marko@math.wisc.edu])
+Author: Marko Budisic [marko@math.wisc.edu](mailto:marko@math.wisc.edu)
 
 This is my implementation of Coifman/Lafon algorithm for efficient
 embeddings of high-dimensional data sets, specifically geared towards
@@ -206,6 +201,3 @@ PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
 LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-
-
