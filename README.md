@@ -7,11 +7,11 @@ embeddings of high-dimensional data sets, specifically geared towards
 analysis of dynamical systems. The use can best be seen in two
 examples:
 
-[exampleTorus.m][]: demonstrate that the algorithm successfully embeds a 2-torus
+exampleTorus.m: demonstrate that the algorithm successfully embeds a 2-torus
 
-[exampleDynamics.m][#markdown-header-exampleDynamics]: demonstrate how algorithm is used on trajectories of a dynamical system
+exampleDynamics.m: demonstrate how algorithm is used on trajectories of a dynamical system
 
-[exampleSaddle.m][]: demonstrate how algorithm performs when analyzing non-recurrent dynamics
+exampleSaddle.m: demonstrate how algorithm performs when analyzing non-recurrent dynamics
 
 References:
 
