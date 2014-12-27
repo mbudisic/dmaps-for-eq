@@ -10,9 +10,7 @@ function avgs = computeAverages( t, xy, wv, scales )
 %        - e.g. if state space is [-2,2] x [-5,5]
 %        -      scale should be [4, 10]
 %
-% Real and imaginary components are computed separately because 
-% Matlab Coder (MEX-generator) does not like to return complex variables.
-% I don't know why.
+% Function invokes either MATLAB or MEX version of the code.
 
 global DIFFMAPS_nomex
 global DIFFMAPS_test

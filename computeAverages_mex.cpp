@@ -64,7 +64,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
     double tstep;
     for ( size_t n = 0; n < (Nsteps-1); n++ ) {
 
-      tstep = (t[n+1] - t[n]) / (t[Nsteps-1]-t[0]);
+      tstep = (t[n+1] - t[n]);
       
       // trapezoidal integral
       val += tstep*exp( std::complex<double>(0., 2*M_PI*(wv_x*xy[ n ] + 
@@ -73,6 +73,9 @@ void mexFunction(int nlhs, mxArray *plhs[],
                                                          wv_y*xy[(n+1)+Nsteps]) ) )/2.;
 
     }
+
+    // average by the length of time
+    val /= (t[Nsteps-1]-t[0]); 
 
     avg_r[k] = real(val);
     avg_i[k] = imag(val);
