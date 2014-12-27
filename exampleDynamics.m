@@ -55,22 +55,18 @@ K = size(wv,2);
 
 %% compute averages of Fourier functions along trajectories
 avgs = zeros( K, Npoints, 'like', 1+1j );
+
 xscale = 2*max(max(abs(xy(:,1,:))));
 yscale = 2*max(max(abs(xy(:,2,:))));
 
 % select Matlab Coder MEX if it exists
-if exist('computeAverages_mex') == 3
-    disp('Using MEX averaging function')
-    average = @computeAverages_mex;
-else
-    disp('Using Matlab averaging function. Run "deploytool -build computeAverages.prj" to speed up computation.')
-    average = @computeAverages;
-end
 
 disp('Computing averages')
-parfor n = 1:Npoints
-    [myavg_real, myavg_imag] = average( t, xy(:,:,n), wv, [xscale, yscale] );
-    avgs(:,n) = complex(myavg_real, myavg_imag);
+tic;
+for n = 1:Npoints
+    avgs(:,n) = computeAverages( t, xy(:,:,n), wv, ...
+                               [xscale, yscale] );
+            
 end
 
 % avgs is a K x Npoints complex matrix in which each column
@@ -85,7 +81,7 @@ if exist('sobolevMatrix_mex') == 3
     distance = @sobolevMatrix_mex;
 else
     disp('Using Matlab distance function. Run "deploytool -build sobolevMatrix.prj" to speed up computation.')
-    distance = @sobolevMatrix;
+    distance = @sobolevmatrix;
 end
 
 D = distance( avgs, wv, -(spaceDim + 1)/2 );
@@ -254,7 +250,7 @@ end
 Nsteps = numel(t);
 xy = zeros( Nsteps, 2, Npoints );
 
-parfor n = 1:Npoints
+for n = 1:Npoints
     p = ic(:, n);
     if ~isempty(tpos) && isempty(tneg)
       [~,ypos] = ode23t( @vf, tpos, p );
