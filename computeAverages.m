@@ -10,33 +10,29 @@ function avgs = computeAverages( t, xy, wv, scales )
 %        - e.g. if state space is [-2,2] x [-5,5]
 %        -      scale should be [4, 10]
 %
-% Function invokes either MATLAB or MEX version of the code.
+% Function invokes either MEX version of code if it is compiled.
 
-global DIFFMAPS_nomex
-global DIFFMAPS_test
+K = size(wv, 2);
+D = size(wv, 1);
 
-if isempty(DIFFMAPS_test)
-    DIFFMAPS_test = false;
-end
-if isempty(DIFFMAPS_nomex)
-    DIFFMAPS_nomex = false;
-end
+Nsteps = size(xy,1);
 
-if exist('computeAverages_mex') == 3 && DIFFMAPS_test
-    tic
-    avgs_c = computeAverages_mex( t, xy, wv, scales );
-    fprintf(1, 'Avgs using MEX: %.3f msec\n', toc*1000);
+assert( D == size(xy,2), 'Dimensions of wavevectors and the trajectory do not match. Wavevectors should be a D x K matrix and the trajectory a Nsteps x D matrix.')
+
+avgs = zeros(K, 1, 'like',1+1j); % output is complex valued
+
+for k = 1:K
+
+	% compute the argument of the Fourier harmonic
+	argument = zeros( Nsteps,1);
+	for d = 1:D
+		argument = argument + wv(d,k) * xy(:,d)/scales(d);
+	end
     
-    tic
-    avgs_m = computeAverages_mat( t, xy, wv, scales );
-    fprintf(1, 'Avgs using MAT: %.3f msec\n', toc*1000);
-    fprintf(1, 'Error: %.3f \n', log10(max(abs(avgs_m(:) - avgs_c(:)))) );
-end
-
-
-if exist('computeAverages_mex') == 3 && ~DIFFMAPS_nomex
-    avgs = computeAverages_mex( t, xy, wv, scales );
-else
-    avgs = computeAverages_mat( t, xy, wv, scales );
-end
+    val = exp(2j*pi*argument); % fourier harmonic
     
+    % 1st order integral divided by timespan
+    avgs(k) = sum( (val(1:end-1) + val(2:end) )/2 .* diff(t(:)) ) / ( t(end) - t(1) );
+    
+end
+
