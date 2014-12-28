@@ -76,21 +76,20 @@ disp('Computing distance matrix');
 sobolevOrder = -(size(wv,1) + 1)/2;
 
 tic;
-D = sobolevMatrix( avgs, wv, sobolevOrder );
+D2 = sobolevMatrix( avgs, wv, sobolevOrder );
 fprintf(1, 'New sobolev computation took %.3f \n', toc*1000);
 
 tic
-D_old = sobolevMatrix_old( avgs, wv, sobolevOrder );
+D2_old = sobolevMatrix_old( avgs, wv, sobolevOrder );
 fprintf(1, 'Old sobolev computation took %.3f \n', toc*1000);
 
-% D is a Npoints x Npoints real matrix with positive entries
-assert( max(abs(D(:) - D_old(:))) < 1e-12 )
-
-
+% D2 is a Npoints x Npoints real matrix with positive entries
+assert( max(abs(D2(:) - D2_old(:))) < 1e-12 )
+max(abs(D2(:) - D2_old(:)))
 %% compute diffusion coordinates for trajectories
 disp('Computing diffusion coordinates');
 Nvec = 10; % we need only a few eigenvectors
-[evectors, evalues] = dist2diff(D, Nvec, hband); % % h is set at the beginning of the file
+[evectors, evalues] = dist2diff(D2, Nvec, hband); % % h is set at the beginning of the file
 % evalues is not really important for visualization
 % each column in evectors is Npoints long - elements give diffusion
 % coordinates for the corresponding trajectory.
