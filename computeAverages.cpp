@@ -8,6 +8,9 @@ t - time vector of Nsteps length
 xy - Nsteps x D trajectory
 wv - wavevectors - D x K matrix
 domain - width of the domain in each state variable ( 1 x D )
+
+Outputs:
+avgs - complex K x 1 vector of averages
 */
 #define p_t (prhs[0])
 #define p_xy (prhs[1])

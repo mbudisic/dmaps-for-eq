@@ -1,13 +1,17 @@
-function avgs = computeAverages_mat( t, xy, wv, domain )
-%  [avgs_real, avgs_imag] = computeAverages( t, xy, wv, domain )
+function avgs = computeAverages( t, xy, wv, domain )
+%  [avgs] = computeAverages( t, xy, wv, domain )
 %
 % Evaluate averages of Fourier modes along a single trajectory in a
 % D-dimensional state space.
 %
+% Inputs:
 % t - time vector of Nsteps length
-% xy - Nsteps x D trajectory
-% wv - wavevectors - D x K matrix
+% xy - Nsteps x D trajectory - each row is a point on trajectory
+% wv - wavevectors - D x K matrix  - each column is a D-dimensional wavevector
 % domain - width of the domain in each state variable ( 1 x D )
+%
+% Returns:
+% avgs - K x 1 vector of averages
 %
 % Function invokes either MEX version of code if it is compiled.
 
@@ -16,7 +20,9 @@ K = size(wv, 2);
 
 Nsteps = size(xy,1);
 
-assert( D == size(xy,2), 'Dimensions of wavevectors and the trajectory do not match. Wavevectors should be a D x K matrix and the trajectory a Nsteps x D matrix.')
+assert( D == size(xy,2), ['Dimensions of wavevectors and the trajectory ' ...
+                    'do not match. Wavevectors should be a D x K ' ...
+                    'matrix and the trajectory a Nsteps x D matrix.'])
 
 avgs = zeros(K, 1, 'like',1+1j); % output is complex valued
 
