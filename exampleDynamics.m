@@ -71,21 +71,11 @@ end
 % avgs is a K x Npoints complex matrix in which each column
 % is a vector of averages computed along a single trajectory
 
-%% compute sobolev distances between trajectories
+%% compute squares of sobolev distances between trajectories
 disp('Computing distance matrix');
 sobolevOrder = -(size(wv,1) + 1)/2;
-
-tic;
 D2 = sobolevMatrix( avgs, wv, sobolevOrder );
-fprintf(1, 'New sobolev computation took %.3f \n', toc*1000);
 
-tic
-D2_old = sobolevMatrix_old( avgs, wv, sobolevOrder );
-fprintf(1, 'Old sobolev computation took %.3f \n', toc*1000);
-
-% D2 is a Npoints x Npoints real matrix with positive entries
-assert( max(abs(D2(:) - D2_old(:))) < 1e-12 )
-max(abs(D2(:) - D2_old(:)))
 %% compute diffusion coordinates for trajectories
 disp('Computing diffusion coordinates');
 Nvec = 10; % we need only a few eigenvectors
