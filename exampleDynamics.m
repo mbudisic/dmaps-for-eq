@@ -49,8 +49,7 @@ Npoints = size(xy,3);
 disp('Generating wavevectors')
 [Wx,Wy] = meshgrid(-Wmax:Wmax); % Wmax is set at the beginning
 wv = [Wx(:), Wy(:)].';
-% wv is a 2 x K matrix of wavevectors -
-% K = (2*Wmax+1)^2
+% wv is a D x K matrix of wavevectors -
 K = size(wv,2);
 
 %% compute averages of Fourier functions along trajectories
@@ -63,10 +62,10 @@ yscale = 2*max(max(abs(xy(:,2,:))));
 
 disp('Computing averages')
 tic;
-for n = 1:Npoints
+for n = 1:Npoints    
     avgs(:,n) = computeAverages( t, xy(:,:,n), wv, ...
                                [xscale, yscale] );
-            
+                
 end
 
 % avgs is a K x Npoints complex matrix in which each column
@@ -74,18 +73,19 @@ end
 
 %% compute sobolev distances between trajectories
 disp('Computing distance matrix');
-spaceDim = 2;
+sobolevOrder = -(size(wv,1) + 1)/2;
 
-if exist('sobolevMatrix_mex') == 3
-    disp('Using MEX distance function')
-    distance = @sobolevMatrix_mex;
-else
-    disp('Using Matlab distance function. Run "deploytool -build sobolevMatrix.prj" to speed up computation.')
-    distance = @sobolevmatrix;
-end
+tic;
+D = sobolevMatrix( avgs, wv, sobolevOrder );
+fprintf(1, 'New sobolev computation took %.3f \n', toc*1000);
 
-D = distance( avgs, wv, -(spaceDim + 1)/2 );
+tic
+D_old = sobolevMatrix_old( avgs, wv, sobolevOrder );
+fprintf(1, 'Old sobolev computation took %.3f \n', toc*1000);
+
 % D is a Npoints x Npoints real matrix with positive entries
+assert( max(abs(D(:) - D_old(:))) < 1e-12 )
+
 
 %% compute diffusion coordinates for trajectories
 disp('Computing diffusion coordinates');
