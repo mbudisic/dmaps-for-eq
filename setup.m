@@ -11,5 +11,7 @@ catch me
 end
 
 disp('Displaying exampleDynamics.m');
+disp('This may take a few minutes if this is your first run.')
+disp('Subsequent runs load trajectories from a file.')
 web(publish('exampleDynamics'));
 close all;
