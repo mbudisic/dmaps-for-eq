@@ -6,6 +6,10 @@
 function setname = exampleDynamics
 
 %% Compute or load trajectories from a file
+% The first step of the algorithm is generating trajectories of the
+% dynamical system or loading them from a file. The longer the
+% trajectories are, the closer the final result will be to
+% parametrization of ergodic quotient.
 Ngrid = 30; % dimension of grid of initial conditions per axis
 Tmax = 10;  % trajectory time length
 fwdbwd = 0; % averaging direction -- forward when > 0, backward
@@ -25,6 +29,8 @@ else
 end
 
 Npoints = size(xy,3); % number of trajectories
+
+%%
 % xy contains trajectories in format
 % Nsteps x 2 x Npoints
 % so, e.g., xy(:,:,1) is a matrix containing the trajectory of the first
@@ -40,22 +46,25 @@ wv = [Wx(:), Wy(:)].'; % wv is a 2 x K matrix of wavevectors
 K = size(wv,2);
 D = size(wv,1);
 
+%%
 % Average observables along trajectories and store to avgs
 avgs = zeros( K, Npoints, 'like', 1+1j );
 
+%%
 % Rescaling factors which ensure that the initial harmonic of
 % Fourier functions varies sufficiently over the box including all orbits.
 xscale = 2*max(max(abs(xy(:,1,:))));
 yscale = 2*max(max(abs(xy(:,2,:))));
 
+%%
+% avgs is a K x Npoints complex matrix in which each column
+% is a vector of averages computed along a single trajectory
 disp('Computing averages')
 for n = 1:Npoints    
     avgs(:,n) = computeAverages( t, xy(:,:,n), wv, ...
                                [xscale, yscale] );
                 
 end
-% avgs is a K x Npoints complex matrix in which each column
-% is a vector of averages computed along a single trajectory
 
 %% Compute pairwise distance matrix between trajectories
 % Pairwise distance is computed using vectors of observables
@@ -103,6 +112,7 @@ Ncoord = 10; % Coordinates are sorted, so retain just Ncoord
 % each column in evectors is Npoints long - elements give diffusion
 % coordinates for the corresponding trajectory.
 
+%%
 % At this step, we have representation of trajectories in the
 % diffusion coordinate space. When averaging length is long enough
 % (ergodic averages), and initial conditions cover the state space densely
