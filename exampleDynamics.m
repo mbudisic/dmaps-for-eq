@@ -2,7 +2,9 @@
 % In this file we will demonstrate how Diffusion Maps can be used
 % to give a set of time-invariant coordinates to ergodic sets in
 % the state space of a time-independent dynamical system.
-%%
+% Click on the link to open 
+% <matlab:edit('exampleDynamics.m') the code in Matlab>. 
+
 function setname = exampleDynamics
 
 %% Compute or load trajectories from a file
