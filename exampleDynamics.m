@@ -1,7 +1,12 @@
 %% Diffusion Maps as coordinates of Ergodic Partition/Quotient
+%  
 % In this file we will demonstrate how Diffusion Maps can be used
 % to give a set of time-invariant coordinates to ergodic sets in
 % the state space of a time-independent dynamical system.
+%
+% Click to 
+% <matlab:edit('exampleDynamics.m') open the code in Matlab>. 
+
 %%
 function exampleDynamics
 
@@ -178,7 +183,7 @@ clusters = round( [sign(zeromean(:,kvec)) + 1] * clusterweight );
 % Points are colored by the value of the stream function at
 % the initial condition.
 hf = figure(1);
-hf.Name = 'Embedding dynamics in three independent diffusion coordinates';
+set(hf,'Name','Embedding dynamics in three independent diffusion coordinates');
 scatter3(evectors(:,kvec(1)), ...
          evectors(:,kvec(2)), ...
          evectors(:,kvec(3)), 5, ...
@@ -197,7 +202,7 @@ set(gca,'Color',[0.7,0.7,0.7])
 % *Coloring state space using diffusion coordinates*
 [X,Y] = meshgrid( icgridX, icgridY );
 hf = figure(2);
-hf.Name = 'What is this?';
+set(hf,'Name','Coloring state space using diffusion coordinates');
 for n = 2:10
     subplot(3,3,n-1);
     sel = n-1;
@@ -216,7 +221,7 @@ subtitle('Coloring of the state space by diffusion coordinates');
 %%
 % *Coloring state space using signs of diffusion coordinates used for clustering*
 hf = figure(3);
-hf.Name = 'What is this, a biggun?';
+set(hf, 'Name','Coloring state space using signs of diffusion coordinates');
 pl = 1;
 for n = (kvec+1)
     subplot(1,3,pl);
@@ -237,7 +242,7 @@ subtitle('State space colored by signs of independent coordinates');
 %%
 % *Coloring state space using clusters*
 hf = figure(4);
-hf.Name = 'Colored by clusters?'
+set(hf,'Name','Cluster membership')
 
 subplot(1,2,1)
 colorfield = reshape( clusters, size(X) );
