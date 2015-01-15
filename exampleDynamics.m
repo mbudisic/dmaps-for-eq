@@ -3,7 +3,7 @@
 % to give a set of time-invariant coordinates to ergodic sets in
 % the state space of a time-independent dynamical system.
 %%
-function setname = exampleDynamics
+function exampleDynamics
 
 %% Compute or load trajectories from a file
 % The first step of the algorithm is generating trajectories of the
@@ -14,6 +14,17 @@ Ngrid = 30; % dimension of grid of initial conditions per axis
 Tmax = 10;  % trajectory time length
 fwdbwd = 0; % averaging direction -- forward when > 0, backward
             % when < 0, time-symmetric when == 0
+
+if fwdbwd < 0
+  fwdbwdlabel = 'bwd';
+elseif fwdbwd > 0
+  fwdbwdlabel = 'fwd';  
+else
+  fwdbwdlabel = 'sym';    
+end
+
+demofile = sprintf('exampleSaddleTrajectories_dir_%s_T%.1f.mat', ...
+                   fwdbwdlabel, Tmax);
 
 demofile = sprintf('exampleDynamicsTrajectories_T%.1f.mat',Tmax);
 setname = demofile(1:end-4);
@@ -60,7 +71,7 @@ yscale = 2*max(max(abs(xy(:,2,:))));
 % avgs is a K x Npoints complex matrix in which each column
 % is a vector of averages computed along a single trajectory
 disp('Computing averages')
-for n = 1:Npoints    
+parfor n = 1:Npoints    
     avgs(:,n) = computeAverages( t, xy(:,:,n), wv, ...
                                [xscale, yscale] );
                 
@@ -298,7 +309,7 @@ end
 Nsteps = numel(t);
 xy = zeros( Nsteps, 2, Npoints );
 
-for n = 1:Npoints
+parfor n = 1:Npoints
     p = ic(:, n);
     if ~isempty(tpos) && isempty(tneg)
       [~,ypos] = ode23t( @vf, tpos, p );
