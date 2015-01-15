@@ -29,6 +29,8 @@ for details.
 
 # Installation
 
+The easiest way to set up and demo the code is running `setup.m` file in the toolbox folder.
+
 Most of the code is written in Matlab and requires no specific installation. For speed, however, averaging observables along trajectories is implemented in C++ (in addition to Matlab). Running `mex computeAverages.cpp` in Matlab should build a MEX file that replicates functionality of `computeAverages.m` at much shorter run-time.
 
 # License 
