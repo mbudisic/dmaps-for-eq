@@ -15,15 +15,12 @@ Tmax = 10;  % trajectory time length
 fwdbwd = 0; % averaging direction -- forward when > 0, backward
             % when < 0, time-symmetric when == 0
 
-if fwdbwd < 0
-  fwdbwdlabel = 'bwd';
-elseif fwdbwd > 0
-  fwdbwdlabel = 'fwd';  
-else
-  fwdbwdlabel = 'sym';    
+if fwdbwd < 0, fwdbwdlabel = 'bwd';
+elseif fwdbwd > 0, fwdbwdlabel = 'fwd';  
+else, fwdbwdlabel = 'sym';    
 end
 
-demofile = sprintf('exampleSaddleTrajectories_dir_%s_T%.1f.mat', ...
+demofile = sprintf('exampleDynamicsTrajectories_dir_%s_T%.1f.mat', ...
                    fwdbwdlabel, Tmax);
 
 demofile = sprintf('exampleDynamicsTrajectories_T%.1f.mat',Tmax);
@@ -249,8 +246,7 @@ axis square;
 xlabel('x'); ylabel('y');
 title('Initial conditions labeled by clusters');
 overlay(ic, X, Y);
-colormap(jet)
-colorbar
+colorbar;
 
 subplot(1,2,2)
 scatter3(evectors(:,kvec(1)), evectors(:,kvec(2)), evectors(:,kvec(3)), 5, clusters, 'fill');
@@ -260,7 +256,6 @@ axis square
 title({'Embedding into three independent';['coordinates colored by ' ...
                     'clusters']})
 set(gca,'Color',repmat(0.7,[1,3]))
-colormap(jet)
 
 set(gcf,'color','white');
 subtitle('Sign-based clusters');

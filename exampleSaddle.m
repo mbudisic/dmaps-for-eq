@@ -15,12 +15,9 @@ Tmax = 10;  % trajectory time length
 fwdbwd = 1; % averaging direction -- forward when > 0, backward
             % when < 0, time-symmetric when == 0
 
-if fwdbwd < 0
-  fwdbwdlabel = 'bwd';
-elseif fwdbwd > 0
-  fwdbwdlabel = 'fwd';  
-else
-  fwdbwdlabel = 'sym';    
+if fwdbwd < 0, fwdbwdlabel = 'bwd';
+elseif fwdbwd > 0, fwdbwdlabel = 'fwd';  
+else, fwdbwdlabel = 'sym';    
 end
 
 demofile = sprintf('exampleSaddleTrajectories_dir_%s_T%.1f.mat', ...
@@ -183,26 +180,22 @@ scatter3(evectors(:,kvec(1)), evectors(:,kvec(2)), evectors(:,kvec(3)), 5, color
          'fill');
 xlabel(sprintf('Coordinate %d',kvec(1))); ylabel(sprintf('Coordinate %d',kvec(2))); zlabel(sprintf('Coordinate %d',kvec(3)));
 
-axis equal
-axis square
+axis equal;
+axis square;
 
 title({'Color is the value of x-coordinate';'of initial condition'})
-
-colormap(jet)
 set(gca,'Color',repmat(0.7,[1,3]))
 caxis( [-1,1]*max(abs(color)) );
 a1 = gca;
 
 subplot(1,2,2);
 color = ic(2,:).';
-
 scatter3(evectors(:,kvec(1)), evectors(:,kvec(2)), evectors(:,kvec(3)), 5, color, ...
          'fill');
 xlabel(sprintf('Coordinate %d',kvec(1))); ylabel(sprintf('Coordinate %d',kvec(2))); zlabel(sprintf('Coordinate %d',kvec(3)));
-axis equal
-axis square
+axis equal;
+axis square;
 title({'Color is the value of x-coordinate';'of initial condition'})
-colormap(jet)
 set(gca,'Color',repmat(0.7,[1,3]))
 caxis( [-1,1]*max(abs(color)) );
 a2 = gca;
@@ -227,17 +220,14 @@ for n = 2:10
     xlabel('x'); ylabel('y');
     title(sprintf('Diffusion coordinate %d', sel));
     overlay(xy);
-    colorbar
+    colorbar;
 end
-set(gcf,'color','white');
 subtitle('Coloring of the state space by diffusion coordinates');
 
-figure
+figure;
 pl = 1;
-
 for n = (kvec+1)
     subplot(1,3,pl);
-
     sel = n-1;
     colorfield = reshape( evectors(:,sel), size(X) );
     pcolor(X, Y, colorfield); shading flat;
@@ -247,31 +237,27 @@ for n = (kvec+1)
     title(sprintf('Diff. coordinate (%d)', sel));
     pl = pl+1;    
 end
-set(gcf,'color','white');
 subtitle('State space colored by coordinates used for clustering');
 
 %% Clustering
 figure;
-
-subplot(1,2,1)
+subplot(1,2,1);
 colorfield = reshape( clusters, size(X) );
 pcolor(X, Y, colorfield); shading flat;
 axis square;
 xlabel('x'); ylabel('y');
 title('Initial conditions labeled by clusters');
 overlay(xy);
-colormap(jet)
-colorbar
+colorbar;
 
-subplot(1,2,2)
+subplot(1,2,2);
 scatter3(evectors(:,kvec(1)), evectors(:,kvec(2)), evectors(:,kvec(3)), 5, clusters, 'fill');
 xlabel(sprintf('Coordinate %d',kvec(1))); ylabel(sprintf('Coordinate %d',kvec(2))); zlabel(sprintf('Coordinate %d',kvec(3)));
-axis equal
-axis square
+axis equal;
+axis square;
 title({'Embedding into three independent';['coordinates colored by ' ...
                     'clusters']})
-set(gca,'Color',repmat(0.7,[1,3]))
-colormap(jet)
+set(gca,'Color',repmat(0.7,[1,3]));
 
 set(gcf,'color','white');
 subtitle('Sign-based clusters');
@@ -419,24 +405,18 @@ function [ax,h]=subtitle(text)
 %           returns handles to both the axis and the title.
 % ax=subtitle(text)
 %           returns a handle to the axis only.
-%
-% Taken from:
-% http://www.mathworks.com/matlabcentral/answers/100459-how-can-i-insert-a-title-over-a-group-of-subplots
-  
-ax=axes('Units','Normal','Position',[.075 .075 .85 .85],'Visible', ...
-        'off');
-get(ax)
+ax=axes('Units','Normal','Position',[.075 .075 .85 .85],'Visible','off');
 set(get(ax,'Title'),'Visible','on');
 uistack(ax,'bottom') % push title axis to the bottom
 title(text);
 if (nargout < 2)
-  return
+    return
 end
 h=get(ax,'Title');
 end
 
-% overlay function to plot on top of color plots
-% e.g., simulated trajectories or hamiltonian level curves
+% Overlay function to plot on top of color plots
+% Simulated trajectories.
 function overlay(xy)
   hold on
   for k = 1:20:size(xy,3)
