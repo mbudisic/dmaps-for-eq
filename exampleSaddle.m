@@ -1,33 +1,31 @@
-function setname = exampleSaddle
-% exampleDynamics
-%
-% Demonstration of use of Diffusion Maps for analysis of dynamical systems.
-
-%% preamble
-Ngrid =30; % dimension of grid of initial conditions per axis
-Tmax = 3;   % trajectory time length
-Wmax = 5;   % max wavevector used (results in (2 Wmax + 1)^2 observables used
-hband = 0;     % diffusion bandwidth - <= 0 to autodetect (see nss.m)
-fwdbwd = 0;
-
-Nvec = 10; % vectors to compute for diffusion maps
-
-% if you want to force the use of a certain vector for clustering, 
-% enter its index in k1, k2, or k3
-% otherwise leave as NaN
-k1 = 2;
-k2 = 3;
-k3 = NaN;
-kvec = [k1,k2,k3];
-clustersel = [true, true, false];
-
-% cluster into 2 (one true element), 4 (two true elements), or 8
-% clusters (three true elements)
-assert(any(clustersel),'Set at least one clustering selection');
-fprintf('Clustering into %d clusters. (change variable clustersel to alter).\n', 2^sum(double(clustersel)));
+%% Diffusion Maps as coordinates of Ergodic Partition/Quotient
+% In this file we will demonstrate how Diffusion Maps can be used
+% to give a set of time-invariant coordinates to ergodic sets in
+% the state space of a time-independent dynamical system.
+%%
+function exampleSaddle
 
 %% Compute or load trajectories from a file
-demofile = sprintf('exampleSaddleTrajectories_T%.1f.mat',Tmax);
+% The first step of the algorithm is generating trajectories of the
+% dynamical system or loading them from a file. The longer the
+% trajectories are, the closer the final result will be to
+% parametrization of ergodic quotient.
+Ngrid = 30; % dimension of grid of initial conditions per axis
+Tmax = 10;  % trajectory time length
+fwdbwd = 1; % averaging direction -- forward when > 0, backward
+            % when < 0, time-symmetric when == 0
+
+if fwdbwd < 0
+  fwdbwdlabel = 'bwd';
+elseif fwdbwd > 0
+  fwdbwdlabel = 'fwd';  
+else
+  fwdbwdlabel = 'sym';    
+end
+
+demofile = sprintf('exampleSaddleTrajectories_dir_%s_T%.1f.mat', ...
+                   fwdbwdlabel, Tmax);
+
 setname = demofile(1:end-4);
 if exist(demofile,'file')
     disp(['Loading trajectories. Erase ' demofile ' to recompute.']);
@@ -39,66 +37,137 @@ else
     disp(['Saving trajectories to ' demofile]);    
     save(demofile, 'xy', 't', 'icgridX', 'icgridY', 'ic');
 end
-Npoints = size(xy,3);
+
+Npoints = size(xy,3); % number of trajectories
+
+%%
 % xy contains trajectories in format
 % Nsteps x 2 x Npoints
 % so, e.g., xy(:,:,1) is a matrix containing the trajectory of the first
 % initial condition
 
-%% generate all relevant wavevector pairs up to Wmax harmonic in each dimension
+%% Average observables (2D Fourier functions) along trajectories
+% Maximum wavevector used in either spatial dimension.
+% Number of observables used is K = (2 Wmax + 1)^2
+Wmax = 5;   
 disp('Generating wavevectors')
-[Wx,Wy] = meshgrid(-Wmax:Wmax); % Wmax is set at the beginning
-wv = [Wx(:), Wy(:)].';
-% wv is a 2 x K matrix of wavevectors -
-% K = (2*Wmax+1)^2
+[Wx,Wy] = meshgrid(-Wmax:Wmax); 
+wv = [Wx(:), Wy(:)].'; % wv is a 2 x K matrix of wavevectors
 K = size(wv,2);
+D = size(wv,1);
 
-%% compute averages of Fourier functions along trajectories
+%%
+% Average observables along trajectories and store to avgs
 avgs = zeros( K, Npoints, 'like', 1+1j );
 
-% width and height of the minimal rectangle enclosing all
-% trajectories
+%%
+% Rescaling factors which ensure that the initial harmonic of
+% Fourier functions varies sufficiently over the box including all
+% orbits.
 extentx=abs(xy(:,1,:));
 xscale = 2*prctile(extentx(:),63); 
 extenty=abs(xy(:,1,:));
 yscale = 2*prctile(extenty(:),63); 
 
-disp('Computing averages')
-parfor n = 1:Npoints
-    avgs(:,n) = computeAverages( t, xy(:,:,n), wv, [xscale, yscale] );
-end
 
+%%
 % avgs is a K x Npoints complex matrix in which each column
 % is a vector of averages computed along a single trajectory
-
-%% compute sobolev distances between trajectories
-disp('Computing distance matrix');
-spaceDim = 2;
-
-if exist('sobolevMatrix_mex') == 3
-    disp('Using MEX distance function')
-    distance = @sobolevMatrix_mex;
-else
-    disp('Using Matlab distance function. Run "deploytool -build sobolevMatrix.prj" to speed up computation.')
-    distance = @sobolevmatrix;
+disp('Computing averages')
+parfor n = 1:Npoints    
+    avgs(:,n) = computeAverages( t, xy(:,:,n), wv, ...
+                               [xscale, yscale] );
+                
 end
 
-D = distance( avgs, wv, -(spaceDim + 1)/2 );
-% D is a Npoints x Npoints real matrix with positive entries
+%% Compute pairwise distance matrix between trajectories
+% Pairwise distance is computed using vectors of observables
+% computed in the previous step. It corresponds to a Sobolev
+% distance on the space of Fourier coefficients. Matrix of pairwise
+% distances is the input to Diffusion Maps algorithm.
+%
+% Order -( D + 1 )/2 where D is the state dimension was used in
+% (Budisic 2012). 
+% Order -1/2 was used as a mix norm in (Mathew, 2005)
+% Order -1 was used as a mix norm in (Lin, 2011)
+disp('Computing distance matrix');
+sobolevOrder = -(D + 1)/2;
+D2 = sobolevMatrix( avgs, wv, sobolevOrder );
 
-%% compute diffusion coordinates for trajectories
+%% Compute Diffusion Coordinates
+% Diffusion maps treats the Pairwise Distance matrix as a set of
+% discrete samples on a Riemann manifold. Its goal is to extract
+% the intrinsic distance on the manifold from the samples by using
+% numerical diffusion. The algorithm returns the coordinates of
+% samples using the Diffusion Coordinates, in which Euclidean
+% distance corresponds to, informally, mean diffusion distance on
+% the sampled manifold.
+%
+% The main parameter of Diffusion Maps algorithm is the diffusion
+% bandwidth which governs how strongly will the neighboring points in the
+% ergodic quotient be bridged by diffusion. Too small bandwidth will
+% result in many disconnected components, too large bandwidth may
+% artificially create one large connected component in the ergodic
+% quotient.
+%
+% Heuristically, the calculation does not seem to be too sensitive
+% to the choice of bandwidth - changes of even an order of
+% magnitude may not influence the final result. The value of the
+% bandwidth can be inferred from data to which algorithm is applied
+% (Lee, 2009). One of such algorithms are invoked by setting hband
+% at 0.
+hband = 0;  % diffusion bandwidth - <= 0 to autodetect (see nss.m)
+
 disp('Computing diffusion coordinates');
-[evectors, evalues] = dist2diff(D, Nvec, hband); % % h is set at
-                                                 % the beginning of
-                                                 % the file
+Ncoord = 10; % Coordinates are sorted, so retain just Ncoord 
+[evectors, evalues] = dist2diff(D2, Ncoord, hband); 
+
 % evalues is not really important for visualization
 % each column in evectors is Npoints long - elements give diffusion
 % coordinates for the corresponding trajectory.
 
-% Heuristic: find indices of three "most independent" coordinates.
-[k1,k2,k3] = threeIndependent(evectors, [k1, k2, k3]);
+%%
+% At this step, we have representation of trajectories in the
+% diffusion coordinate space. When averaging length is long enough
+% (ergodic averages), and initial conditions cover the state space densely
+% enough, these coordinates are the coordinate system for the
+% Ergodic Quotient. Everything that follows is post-processing.
 
-%% THE END OF COMPUTATION
+%% Parameterize clustering algorithm
+% The clustering is performed very crudely: using the signs of the
+% three "most independent" coordinate functions (see function
+% threeIndependent at the end).  For this reason, using 3 diffusion
+% coordinates to cluster will result in at most 8 clusters,
+% corresponding to combinations of signs of coordinates at a point,
+% e.g., +++, ++-, +-+, etc
+% 
+% This is performed for demonstration purposes only. In a more
+% serious implementation, this clustering step might be omitted to
+% retain the fine-grained classification, or replaced with a more
+% sophisticated algorithm.
+% 
+% Choice of diffusion coordinates used for clustering. Ideally,
+% coordinates 1, 2, 3 would give the best layout. However, if a
+% user wants to leave it open to the algorithm to choose, set NaN
+% instead one of the indices.
+kvec = threeIndependent(evectors, [1,2,NaN]);
+
+% Number of clusters to split data in:
+% [true, false, false] - 2
+% [true, true, false] - 4
+% [true, true, true] - 8
+clustersel = [true, true, false];
+assert(any(clustersel),'Set at least one clustering selection');
+fprintf('Clustering into %d clusters.\n', ...
+        2^sum(double(clustersel)));
+
+disp('Coarse clustering')
+zeromean = evectors - repmat( mean(evectors,1), [Npoints,1] );
+clusterweight = 2.^[2,1,0].';
+clusterweight(~clustersel) = 0;
+
+clusters = round( [sign(zeromean(:,kvec)) + 1] * clusterweight );
+
 disp('Visualizing')
 %% visualization of results (just for purposes of demonstration)
 [X,Y] = meshgrid( icgridX, icgridY );
@@ -110,9 +179,9 @@ color = evectors(:,colorind);
 figure
 subplot(1,2,1);
 color = ic(1,:).';
-scatter3(evectors(:,k1), evectors(:,k2), evectors(:,k3), 5, color, ...
+scatter3(evectors(:,kvec(1)), evectors(:,kvec(2)), evectors(:,kvec(3)), 5, color, ...
          'fill');
-xlabel(sprintf('Coordinate %d',k1)); ylabel(sprintf('Coordinate %d',k2)); zlabel(sprintf('Coordinate %d',k3));
+xlabel(sprintf('Coordinate %d',kvec(1))); ylabel(sprintf('Coordinate %d',kvec(2))); zlabel(sprintf('Coordinate %d',kvec(3)));
 
 axis equal
 axis square
@@ -127,9 +196,9 @@ a1 = gca;
 subplot(1,2,2);
 color = ic(2,:).';
 
-scatter3(evectors(:,k1), evectors(:,k2), evectors(:,k3), 5, color, ...
+scatter3(evectors(:,kvec(1)), evectors(:,kvec(2)), evectors(:,kvec(3)), 5, color, ...
          'fill');
-xlabel(sprintf('Coordinate %d',k1)); ylabel(sprintf('Coordinate %d',k2)); zlabel(sprintf('Coordinate %d',k3));
+xlabel(sprintf('Coordinate %d',kvec(1))); ylabel(sprintf('Coordinate %d',kvec(2))); zlabel(sprintf('Coordinate %d',kvec(3)));
 axis equal
 axis square
 title({'Color is the value of x-coordinate';'of initial condition'})
@@ -166,7 +235,7 @@ subtitle('Coloring of the state space by diffusion coordinates');
 figure
 pl = 1;
 
-for n = ([k1,k2,k3]+1)
+for n = (kvec+1)
     subplot(1,3,pl);
 
     sel = n-1;
@@ -182,28 +251,7 @@ set(gcf,'color','white');
 subtitle('State space colored by coordinates used for clustering');
 
 %% Clustering
-
-% The clustering is performed very crudely: using the signs of the
-% three "most independent" coordinate functions (see function
-% threeIndependent at the end).
-%
-% For this reason, there are always 8 clusters, corresponding to
-% combinations of signs of coordinates k1 k2 k3, e.g., +++, ++-,
-% +-+, etc
-% 
-% This is performed for demonstration purposes only. In a more
-% serious implementation, this clustering step might be omitted to
-% retain the fine-grained classification, or replaced with a more
-% sophisticated algorithm.
-
 figure;
-
-disp('Coarse clustering')
-zeromean = evectors - repmat( mean(evectors,1), [Npoints,1] );
-clusterweight = 3.^[2,1,0].';
-clusterweight(~clustersel) = 0;
-
-clusters = round( [sign(zeromean(:,[k1,k2,k3])) + 1] * clusterweight );
 
 subplot(1,2,1)
 colorfield = reshape( clusters, size(X) );
@@ -216,8 +264,8 @@ colormap(jet)
 colorbar
 
 subplot(1,2,2)
-scatter3(evectors(:,k1), evectors(:,k2), evectors(:,k3), 5, clusters, 'fill');
-xlabel(sprintf('Coordinate %d',k1)); ylabel(sprintf('Coordinate %d',k2)); zlabel(sprintf('Coordinate %d',k3));
+scatter3(evectors(:,kvec(1)), evectors(:,kvec(2)), evectors(:,kvec(3)), 5, clusters, 'fill');
+xlabel(sprintf('Coordinate %d',kvec(1))); ylabel(sprintf('Coordinate %d',kvec(2))); zlabel(sprintf('Coordinate %d',kvec(3)));
 axis equal
 axis square
 title({'Embedding into three independent';['coordinates colored by ' ...
@@ -302,7 +350,7 @@ u = inv(T)*diag([2,-1])*T*p;
 
 end
 
-function [k1,k2,k3] = threeIndependent( coord, kvec )
+function kvec = threeIndependent( coord, kvec )
 %
 % Retrieve indices of three "most independent" coordinate functions
 % (each column is an evaluation of a coordinate function on the
@@ -328,7 +376,7 @@ function [k1,k2,k3] = threeIndependent( coord, kvec )
 %
   
   Npoints = size(coord,1);
-  Nvec = size(coord,2);
+  Ncoord = size(coord,2);
   
   if isnan( kvec(1) )
   k1 = 1;
@@ -342,7 +390,7 @@ function [k1,k2,k3] = threeIndependent( coord, kvec )
   D1 = sum(abs(diff(sorted1,1,1))/Npoints,1);
   
   if isnan( kvec(2) )
-    k2 = find( D1 > mean(D1) & (1:Nvec > k1), 1, 'first' );
+    k2 = find( D1 > mean(D1) & (1:Ncoord > k1), 1, 'first' );
   else
     k2 = kvec(2);
   end
@@ -359,7 +407,8 @@ function [k1,k2,k3] = threeIndependent( coord, kvec )
   else
     k3 = kvec(3);
   end
-
+  
+  kvec = [k1, k2, k3];
 end
 
 function [ax,h]=subtitle(text)
