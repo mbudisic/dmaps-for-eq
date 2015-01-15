@@ -28,7 +28,6 @@ end
 demofile = sprintf('exampleDynamicsTrajectories_dir_%s_T%.1f.mat', ...
                    fwdbwdlabel, Tmax);
 
-demofile = sprintf('exampleDynamicsTrajectories_T%.1f.mat',Tmax);
 setname = demofile(1:end-4);
 if exist(demofile,'file')
     disp(['Loading trajectories. Erase ' demofile ' to recompute.']);
