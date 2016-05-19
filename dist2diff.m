@@ -5,6 +5,7 @@ function [evectors, evalues, h] = dist2diff(D, Nvec, h)
 %
 % D - squared-distance matrix
 % Nvec - number of vectors computed
+% t - exponent
 % h - diffusion bandwidth (if omitted or negative, it will be estimated)
 %
 % returns:
@@ -12,12 +13,14 @@ function [evectors, evalues, h] = dist2diff(D, Nvec, h)
 %            eigenvector)
 % evalues - eigenvalues of the diffusion (without the trivial one)
 
+import DiffusionMaps.*
+
 % number of points
 N = size(D,1);
 
 %% estimate diffusion bandwidth
 if ~exist('h', 'var') || h <= 0
-    Nsize = min( fix(N*5e-3), N-1); % neighborhood size - this is heuristic, sets to .5% of dataset
+    Nsize = min( fix(N*5e-2), N-1); % neighborhood size - this is heuristic, sets to 5% of dataset
     h = nss(D, Nsize); % estimate using neighborhood size stability
     fprintf(1,'Estimated bandwidth h = %.2e\n',h);
 end
@@ -67,4 +70,3 @@ evectors = evectors ./ repmat(evectors(:,1), [1, size(evectors,2)]);
 % skip trivial eigenvalue and eigenvector
 evectors = evectors(:,2:end);
 evalues = evalues(2:end);
-
