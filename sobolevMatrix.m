@@ -7,6 +7,9 @@ function D2 = sobolevMatrix( V, wv, order )
 % wv - D x K - wavevectors - each column is a D-dimensional wavevector
 % order - order of Sobolev distance 
 
+import DiffusionMaps.*
+
+
 D = size(wv, 1); % number of states
 K = size(wv, 2); % number of observables
 
@@ -16,6 +19,7 @@ N = size(V, 2); % number of points
 % populate distance matrix by Sobolev distance - result is a vector
 % storing just the lower triangle of the matrix
 D2vec = pdist( V.', @(Xi, Xj)sobdist2( Xi, Xj, wv, order ) );
+% this should be simplified using 'mahalanobis' in pdist
 
 assert( ~any( isnan(D2vec(:))), 'There is a NaN in the matrix');
 
