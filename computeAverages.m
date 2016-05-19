@@ -33,11 +33,10 @@ for k = 1:K
 	for d = 1:D
 		argument = argument + wv(d,k) * xy(:,d)/domain(d);
 	end
-    
+
     val = exp(2j*pi*argument); % fourier harmonic
-    
+
     % 1st order integral divided by timespan
     avgs(k) = sum( (val(1:end-1) + val(2:end) )/2 .* diff(t(:)) ) / ( t(end) - t(1) );
-    
-end
 
+end

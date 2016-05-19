@@ -10,6 +10,8 @@
 %%
 function exampleDynamics
 
+import DiffusionMaps.*
+
 %% Compute or load trajectories from a file
 % The first step of the algorithm is generating trajectories of the
 % dynamical system or loading them from a file. The longer the
