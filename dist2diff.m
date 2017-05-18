@@ -1,17 +1,21 @@
-function [evectors, evalues, h] = dist2diff(D, Nvec, h)
-% DIST2DIFF(D, Nvec, h)
+function [evectors, evalues, h, Ahat, S] = dist2diff(D, Nvec, h)
+% DIST2DIFF(D, Nvec, h) Compute diffusion eigenfunctions from a distance matrix.
 %
-% Compute diffusion eigenfunctions from a distance matrix.
+% [evectors, evalues, h, Ahat, S] = dist2diff(D, Nvec, h)
 %
+% Inputs:
 % D - squared-distance matrix
 % Nvec - number of vectors computed
 % t - exponent
 % h - diffusion bandwidth (if omitted or negative, it will be estimated)
 %
-% returns:
+% Outputs:
 % evectors - eigenvectors of the diffusion (without the trivial
 %            eigenvector)
-% evalues - eigenvalues of the diffusion (without the trivial one)
+% evalues  - eigenvalues of the diffusion (without the trivial one)
+% h        - bandwidth used
+% Ahat     - diffusion Markov transition matrix
+% S        - symmetrized diffusion Markov transition matrix
 
 import DiffusionMaps.*
 
@@ -70,3 +74,25 @@ evectors = evectors ./ repmat(evectors(:,1), [1, size(evectors,2)]);
 % skip trivial eigenvalue and eigenvector
 evectors = evectors(:,2:end);
 evalues = evalues(2:end);
+
+function h = nss(D, Nsize)
+% h = nss(D, Nneigh)
+%
+% Estimate bandwidth using Neighborhood Size Stability.
+%
+% D - square of distances
+% Nsize - size of the neighborhood
+
+N = size(D,1);
+ds = zeros(1,N);
+
+Nsize = max(Nsize,1); % Nsize cannot be less than 1
+
+% find Nsize-smallest distance
+for k = 1:N
+    y = sort(D(:,k));
+    ds(k) = y(Nsize+1); % +1 accounts for diagonal which is always 0
+end
+
+% bandwidth h such that each point has Nsize neighbors within sqrt(2h)
+h = max(ds)/2;
