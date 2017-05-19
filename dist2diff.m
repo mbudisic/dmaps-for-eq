@@ -19,7 +19,7 @@ function [evectors, evalues, h, Ahat, S] = dist2diff(D, Nvec, h)
 
 import DiffusionMaps.*
 
-validateattributes(D, {'numeric'},{'matrix','square','nonnan'});
+validateattributes(D, {'numeric'},{'2d','square','nonnan'});
 
 % number of points
 N = size(D,1)
