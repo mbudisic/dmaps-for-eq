@@ -19,12 +19,15 @@ function [evectors, evalues, h, Ahat, S] = dist2diff(D, Nvec, h)
 
 import DiffusionMaps.*
 
+validateattributes(D, {'numeric'},{'matrix','square','nonnan'});
+
 % number of points
-N = size(D,1);
+N = size(D,1)
 
 %% estimate diffusion bandwidth
 if ~exist('h', 'var') || h <= 0
-    Nsize = min( fix(N*5e-2), N-1); % neighborhood size - this is heuristic, sets to 5% of dataset
+
+    Nsize = min( fix(N*5e-2), N-1) % neighborhood size - this is heuristic, sets to 5% of dataset
     h = nss(D, Nsize); % estimate using neighborhood size stability
     fprintf(1,'Estimated bandwidth h = %.2e\n',h);
 end
@@ -84,6 +87,9 @@ function h = nss(D, Nsize)
 % Nsize - size of the neighborhood
 
 N = size(D,1);
+
+validateattributes(Nsize,{'numeric'},{'integer','positive','finite', '<=',N});
+
 ds = zeros(1,N);
 
 Nsize = max(Nsize,1); % Nsize cannot be less than 1
