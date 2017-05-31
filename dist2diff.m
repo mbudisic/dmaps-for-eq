@@ -1,13 +1,15 @@
-function [evectors, evalues, h, Ahat, S] = dist2diff(D, Nvec, h)
-% DIST2DIFF(D, Nvec, h) Compute diffusion eigenfunctions from a distance matrix.
+function [evectors, evalues, h, Ahat, S] = dist2diff(varargin)
+% DIST2DIFF Compute diffusion eigenfunctions from a distance matrix.
 %
-% [evectors, evalues, h, Ahat, S] = dist2diff(D, Nvec, h)
+% [evectors, evalues, h, Ahat, S] = dist2diff(D)
 %
 % Inputs:
 % D - squared-distance matrix
-% Nvec - number of vectors computed
-% t - exponent
-% h - diffusion bandwidth (if omitted or negative, it will be estimated)
+%
+% Optional named parameters:
+% Nvec - number of vectors computed (default: size D / 2)
+% t - exponent (default: 1)
+% h - diffusion bandwidth (default: heuristic estimate)
 %
 % Outputs:
 % evectors - eigenvectors of the diffusion (without the trivial
@@ -19,23 +21,37 @@ function [evectors, evalues, h, Ahat, S] = dist2diff(D, Nvec, h)
 
 import DiffusionMaps.*
 
-validateattributes(D, {'numeric'},{'2d','square','nonnan'});
+parser = inputParser;
+parser.addRequired('D', @(x)validateattributes(x, {'numeric'},{'2d','square','nonnan','nonnegative'}) );
+parser.addParameter('Nvec', NaN, @(x)validateattributes(x,{'numeric'},{'scalar'} ) );
+parser.addParameter('h', NaN, @(x)validateattributes(x,{'numeric'},{'scalar'} ) );
+parser.addParameter('t', 1, @(x)validateattributes(x,{'numeric'},{'scalar'} ) );
+
+parser.parse(varargin{:});
+D = parser.Results.D;
+t = parser.Results.t;
 
 % number of points
 N = size(D,1)
 
-%% estimate diffusion bandwidth
-if ~exist('h', 'var') || h <= 0
+if isnan(parser.Results.Nvec)
+    Nvec = ceil(N*0.5);
+else
+    Nvec = parser.Results.Nvec;
+end
 
+if isnan(parser.Results.h) || parser.Results.h < 0
     Nsize = min( fix(N*5e-2), N-1) % neighborhood size - this is heuristic, sets to 5% of dataset
     h = nss(D, Nsize); % estimate using neighborhood size stability
     fprintf(1,'Estimated bandwidth h = %.2e\n',h);
+else
+    h = parser.Results.h;
 end
 
 assert( h > 0, 'Bandwidth has to be positive')
 
 %% unbiased heat kernel
-A = exp( -D/(4*h)); % heat kernel evaluation
+A = exp( -t*D/(4*h)); % heat kernel evaluation
 disp('Heat kernel evaluated')
 p = sum(A,1);    % estimated sampling density
 Ahat = A ./ (p.' * p); % remove sampling density bias from heat kernel
